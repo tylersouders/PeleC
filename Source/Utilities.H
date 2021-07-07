@@ -109,9 +109,9 @@ auto eos = pele::physics::PhysicsType::eos();
   amrex::Real pres;
   eos.RTY2P(rho, T, massfrac, pres);
 
-  if (k >= 101 && k <= 203 ){
-    if ( j >= 26 && j <= 94){
-      if ( i >= 19 && i <= 111){
+  if (k >= 965 && k <= 1007 ){
+    if ( j >= 63 && j <= 96){
+      if ( i >= 27 && i <= 96){
 
          T *= 3;
 
