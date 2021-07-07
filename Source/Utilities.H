@@ -1,6 +1,7 @@
 #ifndef _UTILITIES_H_
 #define _UTILITIES_H_
 
+#include <AMReX_Geometry.H>
 #include <AMReX_FArrayBox.H>
 #include "Constants.H"
 #include "IndexDefines.H"
@@ -91,9 +92,18 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_addTemp(
-  const int i, const int j, const int k, amrex::Array4<amrex::Real> const& S)
+  const int i, const int j, const int k, amrex::Array4<amrex::Real> const& S, amrex::GeometryData const& geomdata)
 {
-auto eos = pele::physics::PhysicsType::eos();
+
+  const amrex::Real* prob_lo = geomdata.ProbLo();
+  const amrex::Real* prob_hi = geomdata.ProbHi();
+  const amrex::Real* dx = geomdata.CellSize();
+
+  const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+  const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+  const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
+
+  auto eos = pele::physics::PhysicsType::eos();
   amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);
   amrex::Real u[AMREX_SPACEDIM];
   for (int n = 0; n < AMREX_SPACEDIM; n++)

@@ -2078,10 +2078,14 @@ PeleC::addTemp(amrex::MultiFab& S, int ng)
 //  auto const& flags = fact.getMultiEBCellFlagFab();
 //#endif
 
+
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
   for (amrex::MFIter mfi(S, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+
+    const auto geomdata = geom.data();
+
     const amrex::Box& bx = mfi.growntilebox(ng);
 
 //#ifdef PELEC_USE_EB
@@ -2094,7 +2098,7 @@ PeleC::addTemp(amrex::MultiFab& S, int ng)
 
     const auto& sarr = S.array(mfi);
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_addTemp(i, j, k, sarr);
+      pc_addTemp(i, j, k, sarr, geomdata);
     });
   }
 }
