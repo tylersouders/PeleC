@@ -103,6 +103,11 @@ pc_addTemp(
   const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
   const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];
 
+  if (z >= 3.0 && z <= 3.5 ){
+    if ( y >= 0.3 && y <= 0.5){
+      if ( x >= 0.0 && x <= 1.0){
+
+
   auto eos = pele::physics::PhysicsType::eos();
   amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);
   amrex::Real u[AMREX_SPACEDIM];
@@ -119,15 +124,16 @@ pc_addTemp(
   amrex::Real pres;
   eos.RTY2P(rho, T, massfrac, pres);
 
-  if (k >= 965 && k <= 1007 ){
-    if ( j >= 63 && j <= 96){
-      if ( i >= 27 && i <= 96){
+//  if (k >= 965 && k <= 1007 ){
+//    if ( j >= 63 && j <= 96){
+//      if ( i >= 27 && i <= 96){
 
-         T *= 3;
 
-      }
-    }
-  }
+       T *= 7;
+
+//      }
+//    }
+//  }
 
 
   eos.PYT2RE(pres, massfrac, T, rho, energy);
@@ -154,6 +160,12 @@ pc_addTemp(
 //      }
 //    }
 //  }
+
+
+      }
+    }
+  }
+
 
 }
 

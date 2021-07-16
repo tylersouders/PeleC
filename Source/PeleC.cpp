@@ -81,6 +81,11 @@ bool PeleC::mms_initialized = false;
 int PeleC::use_hybrid_weno = 0;
 int PeleC::weno_scheme = 1;
 
+int PeleC::ignit_on_restart = 0;
+
+amrex::Vector<amrex::Real> PeleC::ignit_lo(AMREX_SPACEDIM);
+amrex::Vector<amrex::Real> PeleC::ignit_hi(AMREX_SPACEDIM);
+
 int PeleC::les_model = 0;
 int PeleC::les_filter_type = no_filter;
 int PeleC::les_filter_fgr = 1;
@@ -276,6 +281,11 @@ PeleC::read_params()
   if (ppm_type != 1 && use_hybrid_weno == 1) {
     amrex::Error("PeleC::ppm_type must be 1 (PPM) to use WENO method");
   }
+
+  pp.query("ignit_on_restart", ignit_on_restart);
+
+//  pp.getarr("ignit_lo", ignit_lo, 0, AMREX_SPACEDIM);
+//  pp.getarr("ignit_hi", ignit_hi, 0, AMREX_SPACEDIM);
 
   // for the moment, ppm_type = 0 does not support ppm_trace_sources --
   // we need to add the momentum sources to the states (and not
@@ -1185,10 +1195,11 @@ PeleC::post_restart()
 
   problem_post_restart();
 
-/*
-  amrex::MultiFab& S_new = get_new_data(State_Type);
-  addTemp(S_new,0);
-*/
+
+  if (PeleC::ignit_on_restart) {
+    amrex::MultiFab& S_new = get_new_data(State_Type);
+    addTemp(S_new,0);
+  }
 
 
 }

@@ -546,6 +546,11 @@ public:
   // Parameters for using WENO in the PPM method
   static int use_hybrid_weno;
   static int weno_scheme;
+  static int ignit_on_restart;
+
+
+  static amrex::Vector<amrex::Real>  ignit_lo;
+  static amrex::Vector<amrex::Real>  ignit_hi;
 
   static ProbParmDevice* h_prob_parm_device;
   static ProbParmDevice* d_prob_parm_device;
