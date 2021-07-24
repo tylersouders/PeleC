@@ -1,5 +1,4 @@
 #include "base_getrates.h"
-#include "chemistry_file.H"
 #include <cmath>
 #include <cassert>
 #include <cstdlib>

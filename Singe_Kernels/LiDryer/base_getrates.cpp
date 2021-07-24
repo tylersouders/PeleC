@@ -20,7 +20,7 @@ static AMREX_GPU_DEVICE_MANAGED double recip_molecular_masses[9] = {0.4960465093
 
 AMREX_GPU_HOST_DEVICE
 void base_getrates(const double pressure, const double temperature, const double 
-  avmolwt, const double *mass_frac, double *wdot) 
+  avmolwt, const double *mass_frac, const double * diffusion, const double dt, double *wdot) 
 {
 
   const double PA = 1.013250e+06; //dynes/cm2

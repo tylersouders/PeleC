@@ -1,4 +1,3 @@
-#include "chemistry_file.H"
 #include "gpu_getrates.h"
 
 #ifndef MAX
@@ -20,8 +19,8 @@ static AMREX_GPU_DEVICE_MANAGED double recip_molecular_masses[9] = {0.4960465093
 AMREX_GPU_GLOBAL
 void
 gpu_getrates(const double * temperature_array, const double * pressure_array, 
-  const double * avmolwt_array, const double *mass_frac_array, const int 
-  spec_stride/*NX*NY*NZ in number of doubles*/, double *wdot_array) 
+  const double * avmolwt_array, const double *mass_frac_array, const double *diffsuion, 
+  const double dt, const int spec_stride/*NX*NY*NZ in number of doubles*/, double *wdot_array) 
 {
   
   const double PA = 1.013250e+06;
