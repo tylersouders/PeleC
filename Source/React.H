@@ -5,7 +5,12 @@
 
 #include "IndexDefines.H"
 #include "PelePhysics.H"
+#include "PeleC.H"
 #include "base_getrates.h"
+
+#ifdef USE_SUNDIALS_PP
+#include "reactor.H"
+#endif
 
 // Timestep adapter
 AMREX_GPU_DEVICE
@@ -151,8 +156,12 @@ pc_expl_reactions(
       amrex::Real wdot[NUM_SPECIES];
       auto eos = pele::physics::PhysicsType::eos();
       amrex::Real diffusion[NUM_SPECIES];
-      for (int n = UFS; n < UFS + NUM_SPECIES; n++)  diffusion[n] = diff_term(i,j,k,n);
-      eos.RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot, diffusion, dt_rk);
+      for (int n = UFS; n < UFS + NUM_SPECIES; n++)  diffusion[n-UFS] = diff_term(i,j,k,n);
+#ifdef PELEC_USE_SINGE
+      eos.SINGEWDOT(urk[URHO], urk[UTEMP], massfrac, wdot, diffusion, dt_rk);
+#else
+      eos.RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot);
+#endif
 
       for (int n = 0; n < NUM_SPECIES; ++n)
         wdot[n] += rhoydot_ext[n];

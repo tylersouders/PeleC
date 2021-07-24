@@ -1,7 +1,7 @@
 ############################ BASE ######################################
 
 cmake_minimum_required (VERSION 3.14 FATAL_ERROR)
-project(PeleC CXX C)
+project(PeleC CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 include(CMakePackageConfigHelpers)
@@ -53,7 +53,7 @@ if(PELEC_ENABLE_CUDA)
   endif()
 endif()
 
-if((NOT PELEC_DIM EQUAL 3) AND PELEC_ENABLE_AMREX_EB)
+if((PELEC_DIM EQUAL 1) AND PELEC_ENABLE_AMREX_EB)
   set(PELEC_ENABLE_AMREX_EB OFF)
   message(WARNING "Disabling EB for ${PELEC_DIM}D.")
 endif()
@@ -70,12 +70,21 @@ endif()
 add_subdirectory(${AMREX_SUBMOD_LOCATION})
 include(SetAmrexCompileFlags)
 
+########################### AMReX-Hydro ###############################
+
+message(STATUS "AMReX-Hydro Configure Section")
+set(AMREX_HYDRO_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/AMReX-Hydro")
+
 ########################## SUNDIALS ###################################
 
 if(PELEC_ENABLE_SUNDIALS)
   message(STATUS "SUNDIALS Configure Section")
+  if(NOT (PELEC_SUNDIALS_INTEGRATOR MATCHES "^(arkode|cvode)$"))
+    set(PELEC_SUNDIALS_INTEGRATOR arkode)
+  endif()
   set(SUNDIALS_SUBMOD_LOCATION "${CMAKE_SOURCE_DIR}/Submodules/sundials")
   include(SetSundialsOptions)
+  message(STATUS "SUNDIALS Integrator = ${PELEC_SUNDIALS_INTEGRATOR}")
   #BUILD_TESTING is an old CMake keyword so don't clear it in sundials configure
   set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
   add_subdirectory(${SUNDIALS_SUBMOD_LOCATION})
@@ -96,7 +105,7 @@ endif()
 
 if(PELEC_ENABLE_MPI)
   message(STATUS "MPI Configure Section")
-  find_package(MPI REQUIRED)
+  find_package(MPI REQUIRED CXX)
 endif()
 
 # General information about machine, compiler, and build type
