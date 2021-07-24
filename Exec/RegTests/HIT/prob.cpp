@@ -88,13 +88,9 @@ amrex_probinit(
   trans_parm.const_conductivity =
     trans_parm.const_viscosity * cp / PeleC::h_prob_parm_device->prandtl;
 
-#ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(
-    pele::physics::transport::trans_parm_g, &trans_parm, sizeof(trans_parm));
-#else
-  std::memcpy(
-    pele::physics::transport::trans_parm_g, &trans_parm, sizeof(trans_parm));
-#endif
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, &trans_parm, &trans_parm + 1,
+    pele::physics::transport::trans_parm_g);
 
   // Output IC
   std::ofstream ofs("ic.txt", std::ofstream::out);
@@ -174,7 +170,7 @@ amrex_probinit(
     PeleC::prob_parm_host->h_xdiff[0] = PeleC::prob_parm_host->h_xdiff[1];
 
     // Make sure the search array is increasing
-    if (not std::is_sorted(
+    if (!std::is_sorted(
           PeleC::prob_parm_host->h_xarray.begin(),
           PeleC::prob_parm_host->h_xarray.end())) {
       amrex::Abort("Error: non ascending x-coordinate array.");

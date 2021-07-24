@@ -158,8 +158,10 @@ pc_expl_reactions(
       amrex::Real diffusion[NUM_SPECIES];
       for (int n = UFS; n < UFS + NUM_SPECIES; n++)  diffusion[n-UFS] = diff_term(i,j,k,n);
 #ifdef PELEC_USE_SINGE
+      //printf("Calling Singe Kernel\n");
       eos.SINGEWDOT(urk[URHO], urk[UTEMP], massfrac, wdot, diffusion, dt_rk);
 #else
+      //printf("Calling Fuego Kernel\n");
       eos.RTY2WDOT(urk[URHO], urk[UTEMP], massfrac, wdot);
 #endif
 

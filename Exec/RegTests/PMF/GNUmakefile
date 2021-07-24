@@ -4,7 +4,7 @@ COMP = gnu
 PRECISION = DOUBLE
 
 # Profiling
-PROFILE = FALSE
+PROFILE = TRUE
 TINY_PROFILE = FALSE
 COMM_PROFILE = FALSE
 TRACE_PROFILE = FALSE
@@ -25,13 +25,13 @@ THREAD_SANITIZER = FALSE
 
 # PeleC
 USE_REACT = TRUE
-USE_SUNDIALS_PP = FALSE
+USE_SINGE = FALSE
+Reactor_dir := rk64
 USE_EB = FALSE
 USE_MASA = FALSE
 Eos_dir := Fuego
-Chemistry_Model := drm19
+Chemistry_Model := LiDryer
 Transport_dir := Simple
-USE_SINGE = TRUE
 
 # GNU Make
 Bpack := ./Make.package
