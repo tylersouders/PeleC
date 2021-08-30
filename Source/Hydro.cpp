@@ -3,7 +3,7 @@
 // Set up the source terms to go into the hydro.
 void
 PeleC::construct_hydro_source(
-  const amrex::MultiFab& S,
+  amrex::MultiFab& S,
   amrex::Real time,
   amrex::Real dt,
   int /*amr_iteration*/,
@@ -89,16 +89,16 @@ PeleC::construct_hydro_source(
     reduction(max:courno)
 #endif
     {
-      // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
+      amrex::IArrayBox bcMask[AMREX_SPACEDIM];
       amrex::Real cflLoc = -1.0e+200;
       int is_finest_level = (level == finest_level) ? 1 : 0;
-      // int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
-      // int flag_nscbc_perio[AMREX_SPACEDIM] = {0}; // For 3D, we will know
+      int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
+      int flag_nscbc_perio[AMREX_SPACEDIM] = {0}; // For 3D, we will know
       // which corners have a periodicity
-      // for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-      //  flag_nscbc_perio[dir] =
-      //    (amrex::DefaultGeometry().isPeriodic(dir)) ? 1 : 0;
-      // }
+      for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
+       flag_nscbc_perio[dir] =
+         (amrex::DefaultGeometry().isPeriodic(dir)) ? 1 : 0;
+      }
 
       const int* domain_lo = geom.Domain().loVect();
       const int* domain_hi = geom.Domain().hiVect();
@@ -158,37 +158,27 @@ PeleC::construct_hydro_source(
 
         // Allocate fabs for bcMask. Note that we grow in the opposite direction
         // because the Riemann solver wants a face value in a ghost-cell
-        /*
-              for (int dir = 0; dir < AMREX_SPACEDIM ; dir++)  {
-                const Box& bxtmp = amrex::surroundingNodes(fbx,dir);
-                Box TestBox(bxtmp);
-                for(int d=0; d<AMREX_SPACEDIM; ++d) {
-                  if (dir!=d) TestBox.grow(d,1);
-                }
-                bcMask[dir].resize(TestBox,1);
-                bcMask[dir].setVal(0);
-              }
+        for (int dir = 0; dir < AMREX_SPACEDIM ; dir++)  {
+          const amrex::Box& bxtmp = amrex::surroundingNodes(fbx,dir);
+          amrex::Box TestBox(bxtmp);
+          for(int d=0; d<AMREX_SPACEDIM; ++d) {
+            if (dir!=d) TestBox.grow(d,1);
+          }
+          bcMask[dir].resize(TestBox,1);
+          bcMask[dir].setVal(0);
+        }
 
-              // Becase bcMask is read in the Riemann solver in any case,
-              // here we put physbc values in the appropriate faces for the
-           non-nscbc case set_bc_mask(lo, hi, domain_lo, domain_hi,
-                          AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-                                 AMREX_TO_FORTRAN(bcMask[1]),
-                                 AMREX_TO_FORTRAN(bcMask[2])));
+        // Becase bcMask is read in the Riemann solver in any case,
+        // here we put physbc values in the appropriate faces for the
+        set_bc_mask(bx, flag_nscbc_isAnyPerio,
+                    AMREX_D_DECL(bcMask[0].array(), bcMask[1].array(), bcMask[2].array()),
+                    AMREX_D_DECL(bcMask[0].box(), bcMask[1].box(), bcMask[2].box()));
 
-              if (nscbc_adv == 1)
-              {
-                impose_NSCBC(lo, hi, domain_lo, domain_hi,
-                             AMREX_TO_FORTRAN(*statein),
-                             AMREX_TO_FORTRAN(q.fab()),
-                             AMREX_TO_FORTRAN(qaux.fab()),
-                             AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-                                    AMREX_TO_FORTRAN(bcMask[1]),
-                                    AMREX_TO_FORTRAN(bcMask[2])),
-                             &flag_nscbc_isAnyPerio, flag_nscbc_perio,
-                             &time, dx, &dt);
-              }
-        */
+        if (nscbc_adv == 1) {
+          impose_NSCBC(bx, s, qarr, qauxar, qbx,
+                       AMREX_D_DECL(bcMask[0].array(), bcMask[1].array(), bcMask[2].array()),
+                       flag_nscbc_isAnyPerio, time, dt);
+        }
         BL_PROFILE_VAR("PeleC::srctoprim()", srctop);
         const auto& src_in = sources_for_hydro.array(mfi);
         amrex::ParallelFor(
