@@ -48,8 +48,14 @@ struct PCHypFillExtDir
       amrex::IntVect loc(AMREX_D_DECL(domlo[idir], iv[1], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
-        s_ext[n] = dest(domlo[idir]-1,iv[1], iv[2], n);
       }
+#ifdef PELEC_USE_TURBINFLOW
+      if(iv[=] == domlo[idir]-1){
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv[0], iv[1], iv[2], n);
+        }
+      }
+#endif
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -60,8 +66,14 @@ struct PCHypFillExtDir
       amrex::IntVect loc(AMREX_D_DECL(domhi[idir], iv[1], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
-        s_ext[n] = dest(domlo[idir]+1,iv[1], iv[2], n);
       }
+#ifdef PELEC_USE_TURBINFLOW
+      if(iv[=] == domlo[idir]+1){
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv[0], iv[1], iv[2], n);
+        }
+      }
+#endif
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -74,8 +86,14 @@ struct PCHypFillExtDir
       amrex::IntVect loc(AMREX_D_DECL(iv[0], domlo[idir], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
-        s_ext[n] = dest(iv[0], domlo[idir]-1, iv[2], n);
       }
+#ifdef PELEC_USE_TURBINFLOW
+      if(iv[1] == domlo[idir]-1){
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv[0], iv[1], iv[2], n);
+        }
+      }
+#endif
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -86,8 +104,14 @@ struct PCHypFillExtDir
       amrex::IntVect loc(AMREX_D_DECL(iv[0], domhi[idir], iv[2]));
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(loc, n);
-        s_ext[n] = dest(iv[0], domlo[idir]+1, iv[2], n);
       }
+#ifdef PELEC_USE_TURBINFLOW
+      if(iv[1] == domlo[idir]+1){
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv[0], iv[1], iv[2], n);
+        }
+      }
+#endif
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -97,10 +121,19 @@ struct PCHypFillExtDir
     // zlo and zhi
     idir = 2;
     if ((bc[idir] == amrex::BCType::ext_dir) && (iv[idir] < domlo[idir])) {
+
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(iv[0], iv[1], domlo[idir], n);
-        s_ext[n] = dest(iv[0], iv[1], domlo[idir]-1, n);
       }
+
+#ifdef PELEC_USE_TURBINFLOW
+      if(iv[2] == domlo[idir]-1){
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv[0], iv[1], iv[2], n);
+        }
+      }
+#endif
+
       bcnormal(x, s_int, s_ext, idir, +1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -110,8 +143,14 @@ struct PCHypFillExtDir
       (iv[idir] > domhi[idir])) {
       for (int n = 0; n < NVAR; n++) {
         s_int[n] = dest(iv[0], iv[1], domhi[idir], n);
-        s_ext[n] = dest(iv[0], iv[1], domlo[idir]+1, n);
       }
+#ifdef PELEC_USE_TURBINFLOW
+      if(iv[2] == domlo[idir]+1){
+        for (int n = 0; n < NVAR; n++) {
+          s_ext[n] = dest(iv[0], iv[1], iv[2], n);
+        }
+      }
+#endif
       bcnormal(x, s_int, s_ext, idir, -1, time, geom, *lprobparm);
       for (int n = 0; n < NVAR; n++) {
         dest(iv, n) = s_ext[n];
@@ -180,6 +219,12 @@ pc_bcfill_hyp(
 
         add_turb(bndryBoxLO, data, 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
         probparmDH->turb_ok[dir] = true;
+
+        // probparmH->turbfab[dir].resize(bndryBoxLO,dim);
+        // probparmH->turbfab[dir].setVal<amrex::RunOn::Device>(0);
+        // add_turb(bndryBoxLO, probparmH->turbfab[dir], 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
+        // probparmDH->turbarr[dir] = probparmH->turbfab[dir].array();
+        // probparmDH->turb_ok[dir] = true;
       }
 
       auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(),dir) & bx);
@@ -217,9 +262,11 @@ pc_bcfill_hyp(
 
     for (int dir=0; dir<dim; ++dir) {
       if (probparmDH->turb_ok[dir]) {
+        // probparmH->turbfab[dir].clear();
         probparmDH->turb_ok[dir] = false;
       }
       if (probparmDH->turb_ok[dir+dim]) {
+        // probparmH->turbfab[dir+dim].clear();
         probparmDH->turb_ok[dir+dim] = false;
       }
     }
