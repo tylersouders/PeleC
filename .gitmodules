@@ -3,6 +3,7 @@
 	url = git@github.com:AMReX-Codes/amrex.git
 [submodule "Submodules/PelePhysics"]
 	path = Submodules/PelePhysics
+<<<<<<< HEAD
 	url = git@github.com:AMReX-Combustion/PelePhysics.git
 [submodule "Submodules/PeleC-MP"]
 	path = Submodules/PeleC-MP
@@ -13,3 +14,15 @@
 [submodule "Submodules/GoogleTest"]
 	path = Submodules/GoogleTest
 	url = git@github.com:google/googletest.git
+=======
+	url = https://github.com/AMReX-Combustion/PelePhysics.git
+[submodule "Submodules/PeleC-MP"]
+	path = Submodules/PeleC-MP
+	url = https://github.com/AMReX-Combustion/PeleC-MP.git
+[submodule "Submodules/GoogleTest"]
+	path = Submodules/GoogleTest
+	url = https://github.com/google/googletest.git
+[submodule "Submodules/sundials"]
+	path = Submodules/sundials
+	url = https://github.com/LLNL/sundials.git
+>>>>>>> development

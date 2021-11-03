@@ -1,6 +1,11 @@
 /Exec/WORK/*
 .DS_Store
 datlog
+<<<<<<< HEAD
+=======
+mmslog
+ic.txt
+>>>>>>> development
 plt*
 chk*
 tmp_build_dir
