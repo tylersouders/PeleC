@@ -1,0 +1,9 @@
+CEXE_headers+=mechanism.H base_getrates.h gpu_getrates.h
+ 
+CEXE_sources+=mechanism.cpp base_getrates.cpp gpu_getrates.cpp 
+
+LIBRARIES +=
+
+INCLUDE_LOCATIONS += $(CHEM_DIR)
+
+VPATH_LOCATIONS +=  $(CHEM_DIR)/PMFs

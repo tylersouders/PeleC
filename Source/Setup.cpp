@@ -13,12 +13,11 @@ using namespace MASA;
 #endif
 
 #include "Transport.H"
-#include "mechanism.h"
+#include "mechanism.H"
 #include "PeleC.H"
 #include "Derive.H"
 #include "IndexDefines.H"
 #include "prob.H"
-#include "chemistry_file.H"
 
 ProbParmDevice* PeleC::d_prob_parm_device = nullptr;
 ProbParmDevice* PeleC::h_prob_parm_device = nullptr;
@@ -159,6 +158,7 @@ PeleC::variableSetUp()
     static_cast<PassMap*>(amrex::The_Arena()->alloc(sizeof(PassMap)));
 
   // Get options, set phys_bc
+  eb_in_domain = ebInDomain();
   read_params();
 
   pele::physics::transport::InitTransport<
@@ -174,10 +174,7 @@ PeleC::variableSetUp()
   }
 #ifdef USE_SUNDIALS_PP
   else if (chem_integrator == 2) {
-    amrex::Print()
-      << "Using sundials chemistry integrator with flattened arrays\n";
-  } else if (chem_integrator == 3) {
-    amrex::Print() << "Using sundials chemistry integrator with boxes\n";
+    amrex::Print() << "Using sundials chemistry integrator\n";
   }
 #endif
   else {
@@ -192,11 +189,8 @@ PeleC::variableSetUp()
 
   init_pass_map(h_pass_map);
 
-#ifdef AMREX_USE_GPU
-  amrex::Gpu::htod_memcpy(d_pass_map, h_pass_map, sizeof(PassMap));
-#else
-  std::memcpy(d_pass_map, h_pass_map, sizeof(PassMap));
-#endif
+  amrex::Gpu::copy(
+    amrex::Gpu::hostToDevice, h_pass_map, h_pass_map + 1, d_pass_map);
 
 #ifdef PELEC_USE_MASA
   if (do_mms) {
@@ -319,14 +313,14 @@ PeleC::variableSetUp()
   store_in_checkpoint = true;
   desc_lst.addDescriptor(
     Reactions_Type, amrex::IndexType::TheCellType(),
-    amrex::StateDescriptor::Point, 0, NUM_SPECIES + 1, interp,
+    amrex::StateDescriptor::Point, 0, NUM_SPECIES + 2, interp,
     state_data_extrap, store_in_checkpoint);
 #endif
 
   amrex::Vector<amrex::BCRec> bcs(NVAR);
   amrex::Vector<std::string> name(NVAR);
-  amrex::Vector<amrex::BCRec> react_bcs(NUM_SPECIES + 1);
-  amrex::Vector<std::string> react_name(NUM_SPECIES + 1);
+  amrex::Vector<amrex::BCRec> react_bcs(NUM_SPECIES + 2);
+  amrex::Vector<std::string> react_name(NUM_SPECIES + 2);
 
   amrex::BCRec bc;
   cnt = 0;
@@ -435,6 +429,8 @@ PeleC::variableSetUp()
   set_react_src_bc(bc, phys_bc);
   react_bcs[NUM_SPECIES] = bc;
   react_name[NUM_SPECIES] = "rhoe_dot";
+  react_bcs[NUM_SPECIES + 1] = bc;
+  react_name[NUM_SPECIES + 1] = "heatRelease";
 
   amrex::StateDescriptor::BndryFunc bndryfunc2(pc_reactfill_hyp);
   bndryfunc2.setRunOnGPU(true);
@@ -590,6 +586,14 @@ PeleC::variableSetUp()
     the_same_box);
   derive_lst.addComponent("particle_density", desc_lst, State_Type, Density, 1);
 #endif
+
+  derive_lst.add(
+    "cp", amrex::IndexType::TheCellType(), 1, pc_dercp, the_same_box);
+  derive_lst.addComponent("cp", desc_lst, State_Type, Density, NVAR);
+
+  derive_lst.add(
+    "cv", amrex::IndexType::TheCellType(), 1, pc_dercv, the_same_box);
+  derive_lst.addComponent("cv", desc_lst, State_Type, Density, NVAR);
 
   // LES coefficients
   if (do_les) {
