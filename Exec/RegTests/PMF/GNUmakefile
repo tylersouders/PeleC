@@ -14,12 +14,12 @@ USE_GPROF = FALSE
 # Performance
 USE_MPI = TRUE
 USE_OMP = FALSE
-USE_CUDA = FALSE
+USE_CUDA = TRUE
 USE_HIP = FALSE
 USE_DPCPP = FALSE
 
 # Debugging
-DEBUG = TRUE
+DEBUG = FALSE
 FSANITIZER = FALSE
 THREAD_SANITIZER = FALSE
 
@@ -36,3 +36,4 @@ Bpack := ./Make.package
 Blocs := .
 PELEC_HOME := ../../..
 include $(PELEC_HOME)/Exec/Make.PeleC
+DEFINES += -DAMREX_GPUS_PER_NODE=2
