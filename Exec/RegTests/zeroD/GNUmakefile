@@ -14,7 +14,7 @@ USE_GPROF = FALSE
 # Performance
 USE_MPI = FALSE
 USE_OMP = FALSE
-USE_CUDA = FALSE
+USE_CUDA = TRUE
 USE_HIP = FALSE
 USE_DPCPP = FALSE
 
@@ -26,7 +26,8 @@ THREAD_SANITIZER = FALSE
 # PeleC
 USE_EB = FALSE
 Eos_Model := Fuego
-Chemistry_Model := LiDryer
+USE_SINGE = TRUE
+Chemistry_Model := dodecane_35
 Transport_Model := Simple
 
 # GNU Make
@@ -34,3 +35,4 @@ Bpack := ./Make.package
 Blocs := .
 PELEC_HOME := ../../..
 include $(PELEC_HOME)/Exec/Make.PeleC
+DEFINES += -DAMREX_GPUS_PER_NODE=2
