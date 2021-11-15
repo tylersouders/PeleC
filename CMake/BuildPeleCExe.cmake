@@ -125,6 +125,7 @@ function(build_pelec_exe pelec_exe_name)
   endif()
 
   if(PELEC_ENABLE_CUDA)
+    target_compile_definitions(${pelec_exe_name} PRIVATE PELEC_USE_SINGE) #Allow use of Singe kernels
     target_link_libraries(${pelec_exe_name} PRIVATE sundials_nveccuda sundials_sunlinsolcusolversp sundials_sunmatrixcusparse)
   elseif(PELEC_ENABLE_HIP)
     target_link_libraries(${pelec_exe_name} PRIVATE sundials_nvechip)
