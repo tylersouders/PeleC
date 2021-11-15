@@ -94,12 +94,13 @@ PeleC::react_state(
   amrex::MultiFab::Copy(
     extsrc_rY, *non_react_src, UFS, 0, NUM_SPECIES, STemp.nGrow());
 
-/*#ifdef PELEC_USE_SINGE
-amrex::MultiFab diffusion_term(grids, dmap, NUM_SPECIES, 0);
-diffusion_term.setVal(0);
-amrex::MultiFab::Saxpy(diffusion_term, 0.5, *new_sources[src_list[diff_src]], FirstSpec, 0, NUM_SPECIES, ng);
-amrex::MultiFab::Saxpy(diffusion_term, 0.5, *old_sources[src_list[diff_src]], FirstSpec, 0, NUM_SPECIES, ng);
-#endif*/
+#ifdef PELEC_USE_SINGE
+amrex::MultiFab diffusion_term(grids, dmap, NUM_SPECIES, STemp.nGrow());
+amrex::MultiFab::Copy(diffusion_term, *old_sources[diff_src], UFS, 0, NUM_SPECIES, STemp.nGrow());
+//diffusion_term.setVal(0);
+//amrex::MultiFab::Saxpy(diffusion_term, 0.5, *new_sources[src_list[diff_src]], FirstSpec, 0, NUM_SPECIES, ng);
+//amrex::MultiFab::Saxpy(diffusion_term, 0.5, *old_sources[src_list[diff_src]], FirstSpec, 0, NUM_SPECIES, ng);
+#endif
 
 #ifdef PELEC_USE_EB
   auto const& fact =
@@ -124,8 +125,7 @@ amrex::MultiFab::Saxpy(diffusion_term, 0.5, *old_sources[src_list[diff_src]], Fi
       auto const& nonrs_arr = non_react_src->array(mfi);
       auto const& I_R = react_src.array(mfi);
 #ifdef PELEC_USE_SINGE
-      //const auto& diff_term = diffusion_term.array(mfi);
-      const auto& diff_term = old_sources[diff_src]->array(mfi);
+      const auto& diff_term = diffusion_term.array(mfi);
 #endif      
 
       // only update beyond first step
