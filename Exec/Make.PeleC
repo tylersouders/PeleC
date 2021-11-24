@@ -102,7 +102,7 @@ Blocs             += $(TRANSPORT_HOME)
 
 Bdirs := $(PELEC_HOME)/Source $(PELEC_HOME)/Source/Params/param_includes
 
-Pdirs := Base Amr Boundary AmrCore
+Pdirs := Base Amr Boundary AmrCore Extern/amrdata
 ifeq ($(USE_EB), TRUE)
   Pdirs += EB
   Bpack += $(AMREX_HYDRO_HOME)/Redistribution/Make.package $(AMREX_HYDRO_HOME)/Slopes/Make.package

@@ -5,6 +5,8 @@
 
 #include <AMReX_Vector.H>
 #include <AMReX_TagBox.H>
+#include <AMReX_DataServices.H>
+#include <AMReX_AmrData.H>
 
 #ifdef PELEC_USE_EB
 #include <AMReX_EBMultiFabUtil.H>
@@ -677,6 +679,80 @@ PeleC::initData()
     get_new_data(Work_Estimate_Type).setVal(1.0);
   }
 
+  amrex::ParmParse pp("pele");
+  if (pp.countval("pltfile_for_init") > 0) {
+    S_new.setVal(0.0);
+    
+    std::string pltfile;
+    pp.get("pltfile_for_init", pltfile);
+    if (verbose)
+      amrex::Print() << "initData: reading data from: " << pltfile << '\n';
+
+    amrex::DataServices::SetBatchMode();
+    amrex::Amrvis::FileType fileType(amrex::Amrvis::NEWPLT);
+    amrex::DataServices dataServices(pltfile, fileType);
+
+    if (!dataServices.AmrDataOk()) {
+      amrex::DataServices::Dispatch(amrex::DataServices::ExitRequest, NULL);
+    }
+
+    amrex::Vector<std::string> names;
+    pele::physics::eos::speciesNames<pele::physics::PhysicsType::eos_type>(names);
+    //pele::physics::eos::speciesNames(names);
+//
+    amrex::AmrData& amrData = dataServices.AmrDataRef();
+    amrex::Vector<std::string> plotnames = amrData.PlotVarNames();
+//    int idT = -1, idV = -1, idX = -1, idY = -1, idRho = -1;
+//    for (int i = 0; i < plotnames.size(); ++i) {
+//      if (plotnames[i] == "Temp ")            idT = i;
+//      if (plotnames[i] == "density")         idRho = i;
+//      if (plotnames[i] == "x_velocity")      idV = i;
+//      if (plotnames[i] == "X("+names[0]+")") idX = i;
+//      if (plotnames[i] == "Y("+names[0]+")") idY = i;
+//     }
+//
+    int idT = 6;
+    int idRho = 0;
+    int idV = 1;
+    int idX = -1;
+    int idY = 10;
+
+    if (verbose) {
+      amrex::Print() << "Initializing data from pltfile: \"" << pltfile << "\" for level " << level << std::endl;
+      amrex::Print() << "x_velocity index: " << idV << std::endl;
+    }
+
+    for (int i = 0; i < AMREX_SPACEDIM; i++) {
+       amrData.FillVar(S_new, level, plotnames[idV+i], UMX+i);
+       amrData.FlushGrids(idV+i);
+       amrex::Print() << "Initialized  velocity array " << i << std::endl;
+    }
+
+    amrData.FillVar(S_new, level, "Temp", UTEMP);
+    amrData.FlushGrids(idT);
+
+    amrData.FillVar(S_new, level, "density", URHO);
+    amrData.FlushGrids(idRho);
+
+#ifdef _OPENMP
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#endif
+    amrex::MultiFab& S_new = get_new_data(State_Type);
+    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+         ++mfi) {
+      const amrex::Box& box = mfi.tilebox();
+      auto sfab = S_new.array(mfi);
+      const auto geomdata = geom.data();
+   
+        amrex::ParallelFor(box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        problem_post_init(i, j, k, sfab, geomdata);
+        pc_check_initial_species(i, j, k, sfab);
+      });
+    }
+
+  }
+  else {
+
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
 #endif
@@ -693,6 +769,7 @@ PeleC::initData()
       // Verify that the sum of (rho Y)_i = rho at every cell
       pc_check_initial_species(i, j, k, sfab);
     });
+  }
   }
 
   enforce_consistent_e(S_new);
@@ -1286,7 +1363,7 @@ void PeleC::post_init(amrex::Real /*stop_time*/)
   }
 
   // Allow the user to define their own post_init functions.
-  problem_post_init();
+  // problem_post_init();
 
   int nstep = parent->levelSteps(0);
   if (cumtime != 0.0) {
