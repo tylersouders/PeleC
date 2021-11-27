@@ -50,7 +50,7 @@ struct PCHypFillExtDir
         s_int[n] = dest(loc, n);
       }
 #ifdef PELEC_USE_TURBINFLOW
-      if(iv[=] == domlo[idir]-1){
+      if(iv[idir] == domlo[idir]-1){
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv[0], iv[1], iv[2], n);
         }
@@ -68,7 +68,7 @@ struct PCHypFillExtDir
         s_int[n] = dest(loc, n);
       }
 #ifdef PELEC_USE_TURBINFLOW
-      if(iv[=] == domlo[idir]+1){
+      if(iv[idir] == domlo[idir]+1){
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv[0], iv[1], iv[2], n);
         }
@@ -88,7 +88,7 @@ struct PCHypFillExtDir
         s_int[n] = dest(loc, n);
       }
 #ifdef PELEC_USE_TURBINFLOW
-      if(iv[1] == domlo[idir]-1){
+      if(iv[idir] == domlo[idir]-1){
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv[0], iv[1], iv[2], n);
         }
@@ -106,7 +106,7 @@ struct PCHypFillExtDir
         s_int[n] = dest(loc, n);
       }
 #ifdef PELEC_USE_TURBINFLOW
-      if(iv[1] == domlo[idir]+1){
+      if(iv[idir] == domlo[idir]+1){
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv[0], iv[1], iv[2], n);
         }
@@ -127,7 +127,7 @@ struct PCHypFillExtDir
       }
 
 #ifdef PELEC_USE_TURBINFLOW
-      if(iv[2] == domlo[idir]-1){
+      if(iv[idir] == domlo[idir]-1){
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv[0], iv[1], iv[2], n);
         }
@@ -145,7 +145,7 @@ struct PCHypFillExtDir
         s_int[n] = dest(iv[0], iv[1], domhi[idir], n);
       }
 #ifdef PELEC_USE_TURBINFLOW
-      if(iv[2] == domlo[idir]+1){
+      if(iv[idir] == domlo[idir]+1){
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = dest(iv[0], iv[1], iv[2], n);
         }
@@ -200,7 +200,6 @@ pc_bcfill_hyp(
 
     // Copy problem parameter structs to host
     amrex::Gpu::copy(amrex::Gpu::deviceToHost, probparmDD, probparmDD + 1, probparmDH);
-
     for (int dir=0; dir<dim; ++dir) {
 
       auto bndryBoxLO = amrex::Box(amrex::adjCellLo(geom.Domain(),dir) & bx);
@@ -216,15 +215,9 @@ pc_bcfill_hyp(
         modDom.grow(growVect);
         auto bndryBoxLO_ghost = amrex::Box(amrex::adjCellLo(modDom,dir) & bx);
         data.setVal<amrex::RunOn::Host>(0.0,bndryBoxLO_ghost,UMX,dim);
-
-        add_turb(bndryBoxLO, data, 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
+        
+      	add_turb(bndryBoxLO, data, 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
         probparmDH->turb_ok[dir] = true;
-
-        // probparmH->turbfab[dir].resize(bndryBoxLO,dim);
-        // probparmH->turbfab[dir].setVal<amrex::RunOn::Device>(0);
-        // add_turb(bndryBoxLO, probparmH->turbfab[dir], 0, geom, time, dir, amrex::Orientation::low, probparmDH->tp);
-        // probparmDH->turbarr[dir] = probparmH->turbfab[dir].array();
-        // probparmDH->turb_ok[dir] = true;
       }
 
       auto bndryBoxHI = amrex::Box(amrex::adjCellHi(geom.Domain(),dir) & bx);
