@@ -112,6 +112,7 @@ void pc_compute_hyp_mol_flux(
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   const EBBndryGeom* ebg,
   const int Nebg,
+  const amrex::Real* bcvals,
   amrex::Real* ebflux,
   const int nebflux
 #endif

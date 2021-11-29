@@ -394,8 +394,8 @@ PeleC::getMOLSrcTerm(
             cbox, qar, qauxar, flx, area_arr, dx, plm_iorder, use_laxf_flux
 #ifdef PELEC_USE_EB
             ,
-            flags.array(mfi), d_sv_eb_bndry_geom, Ncut, d_eb_flux_thdlocal,
-            nFlux
+            flags.array(mfi), d_sv_eb_bndry_geom, Ncut,
+            sv_eb_bcval[local_i].dataPtr(), d_eb_flux_thdlocal, nFlux
 #endif
           );
         }

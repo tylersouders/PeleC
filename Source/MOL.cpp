@@ -20,6 +20,7 @@ pc_compute_hyp_mol_flux(
   const amrex::Array4<amrex::EBCellFlag const>& flags,
   const EBBndryGeom* ebg,
   const int /*Nebg*/,
+  const amrex::Real* bcvals,
   amrex::Real* ebflux,
   const int nebflux
 #endif
@@ -204,9 +205,101 @@ pc_compute_hyp_mol_flux(
       }
 
       amrex::Real flux_tmp[NVAR] = {0.0};
-      AMREX_D_TERM(flux_tmp[UMX] = -q(iv, QPRES) * ebnorm[0];
-                   , flux_tmp[UMY] = -q(iv, QPRES) * ebnorm[1];
-                   , flux_tmp[UMZ] = -q(iv, QPRES) * ebnorm[2];)
+
+      const int Nvals = nebflux;
+      const bool do_ebfill =
+        ((amrex::Math::abs(bcvals[QU * Nvals + L]) > constants::smallu()) ||
+         (amrex::Math::abs(bcvals[QV * Nvals + L]) > constants::smallu()) ||
+         (amrex::Math::abs(bcvals[QW * Nvals + L]) > constants::smallu()));
+
+      if (do_ebfill) {
+
+        amrex::Real cavg = qaux(iv, QC);
+        amrex::Real csmall = qaux(iv, QCSML);
+
+        // Left state
+        auto eos = pele::physics::PhysicsType::eos();
+        amrex::Real qtempl[5 + NUM_SPECIES] = {0.0};
+        amrex::Real spl[NUM_SPECIES] = {0.0};
+        qtempl[R_UN] = -(AMREX_D_TERM(
+          q(iv, QU) * ebnorm[0], +q(iv, QV) * ebnorm[1],
+          +q(iv, QW) * ebnorm[2]));
+        qtempl[R_UT1] = 0.0;
+        qtempl[R_UT2] = 0.0;
+        qtempl[R_P] = q(iv, QPRES);
+        qtempl[R_RHO] = q(iv, QRHO);
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          qtempl[R_Y + n] = q(iv, QFS + n);
+        }
+        amrex::Real eos_state_rho = qtempl[R_RHO];
+        amrex::Real eos_state_p = qtempl[R_P];
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          spl[n] = qtempl[R_Y + n];
+        }
+        amrex::Real eos_state_T;
+        eos.RYP2T(eos_state_rho, spl, eos_state_p, eos_state_T);
+        amrex::Real eos_state_e;
+        eos.RTY2E(eos_state_rho, eos_state_T, spl, eos_state_e);
+        amrex::Real rhoe_l = eos_state_rho * eos_state_e;
+        amrex::Real gamc_l;
+        eos.RTY2G(eos_state_rho, eos_state_T, spl, gamc_l);
+
+        // Right state
+        // Initialize to left state except flip the normal velocity
+        amrex::Real qtempr[5 + NUM_SPECIES] = {0.0};
+        qtempr[R_RHO] = qtempl[R_RHO];
+        qtempr[R_UN] = -1.0 * qtempl[R_UN];
+        qtempr[R_UT1] = qtempl[R_UT1];
+        qtempr[R_UT2] = qtempl[R_UT2];
+        qtempr[R_P] = qtempl[R_P];
+        amrex::Real spr[NUM_SPECIES] = {0.0};
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          spr[n] = spl[n];
+        }
+        amrex::Real rhoe_r = rhoe_l;
+        amrex::Real gamc_r = gamc_l;
+
+        // Adjust right state with EB bc values
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          spr[n] = bcvals[(QFS + n) * Nvals + L];
+        }
+        amrex::Real rho_r, eint_r, T_r = bcvals[QTEMP * Nvals + L];
+        eos.PYT2RE(qtempr[R_P], spr, T_r, rho_r, eint_r);
+        qtempr[R_RHO] = rho_r;
+        rhoe_r = rho_r * eint_r;
+        eos.RTY2G(rho_r, T_r, spr, gamc_r);
+        qtempr[R_UN] = -(AMREX_D_TERM(
+          bcvals[QU * Nvals + L] * ebnorm[0],
+          +bcvals[QV * Nvals + L] * ebnorm[1],
+          +bcvals[QW * Nvals + L] * ebnorm[2]));
+
+        amrex::Real tmp0 = 0.0, tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0, tmp4 = 0.0,
+                    ustar = 0.0;
+        riemann(
+          qtempl[R_RHO], qtempl[R_UN], qtempl[R_UT1], qtempl[R_UT2],
+          qtempl[R_P], spl, qtempr[R_RHO], qtempr[R_UN], qtempr[R_UT1],
+          qtempr[R_UT2], qtempr[R_P], spr, bc_test_val, cavg, ustar,
+          flux_tmp[URHO], flux_tmp[UMX], flux_tmp[UMY], flux_tmp[UMZ],
+          flux_tmp[UEDEN], flux_tmp[UEINT], tmp0, tmp1, tmp2, tmp3, tmp4);
+
+        const amrex::Real tmp_flx_umx = flux_tmp[UMX];
+        AMREX_D_TERM(flux_tmp[UMX] = -tmp_flx_umx * ebnorm[0];
+                     , flux_tmp[UMY] = -tmp_flx_umx * ebnorm[1];
+                     , flux_tmp[UMZ] = -tmp_flx_umx * ebnorm[2];)
+
+        // Compute species flux like passive scalar from intermediate state
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          flux_tmp[UFS + n] =
+            (ustar > 0.0) ? flux_tmp[URHO] * spl[n] : flux_tmp[URHO] * spr[n];
+          flux_tmp[UFS + n] = (ustar == 0.0)
+                                ? flux_tmp[URHO] * 0.5 * (spl[n] + spr[n])
+                                : flux_tmp[UFS + n];
+        }
+      } else {
+        AMREX_D_TERM(flux_tmp[UMX] = -q(iv, QPRES) * ebnorm[0];
+                     , flux_tmp[UMY] = -q(iv, QPRES) * ebnorm[1];
+                     , flux_tmp[UMZ] = -q(iv, QPRES) * ebnorm[2];)
+      }
 
       // Copy result into ebflux vector. Being a bit chicken here and only
       // copy values where ebg % iv is within box
