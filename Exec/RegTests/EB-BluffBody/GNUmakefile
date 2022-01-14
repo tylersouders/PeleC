@@ -1,6 +1,6 @@
 # AMReX
 DIM = 3
-COMP = gnu
+COMP = intel
 PRECISION = DOUBLE
 
 # Profiling
@@ -12,7 +12,8 @@ MEM_PROFILE = FALSE
 USE_GPROF = FALSE
 
 # Performance
-USE_MPI = FALSE
+NO_MPI_CHECKING = TRUE
+USE_MPI = TRUE
 USE_OMP = FALSE
 USE_CUDA = FALSE
 USE_HIP = FALSE
@@ -34,3 +35,4 @@ Bpack := ./Make.package
 Blocs := .
 PELEC_HOME := ../../..
 include $(PELEC_HOME)/Exec/Make.PeleC
+

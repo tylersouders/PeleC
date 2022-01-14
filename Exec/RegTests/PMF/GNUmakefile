@@ -1,6 +1,6 @@
 # AMReX
 DIM = 3
-COMP = gnu
+COMP = intel
 PRECISION = DOUBLE
 
 # Profiling
