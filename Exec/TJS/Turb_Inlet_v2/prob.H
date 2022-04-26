@@ -93,7 +93,7 @@ bcnormal(
       // convert to normalized turbulence terms
       for(int i = 0; i < AMREX_SPACEDIM; i++) {
       	// removing factor of 2.0 * constants::PI() for Huang et al. method (eq. 20)
-      	x_hat[i] = x[i] / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
+      	x_hat[i] = x[i] * 2.0 * constants::PI() / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
       }
       // assume inflow is purely x-dimensional. Correct for inflow speed.
       x_hat[0] -= (2.0 * constants::PI() * PeleC::h_prob_parm_device->u_in * time)

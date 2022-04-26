@@ -48,7 +48,7 @@ amrex_probinit(
   const amrex::Real k_hi = 1.0 / (2.0 * dx_base);
 
   // Compute dk based on a discretization of M different discrete wavenumbers
-  const amrex::Real dk = (k_max - k_min) / PeleC::h_prob_parm_device->turb_num_modes;
+  const amrex::Real dk = (k_hi - k_lo) / PeleC::h_prob_parm_device->turb_num_modes;
 
   // Initialize a few relevant variables.
   amrex::Vector<amrex::Real> zeta_cross_k(3);
@@ -72,7 +72,7 @@ amrex_probinit(
   for (int m = 0; m < PeleC::h_prob_parm_device->turb_num_modes; m++) {
 
     // wave number magnitude
-    k_mag = k_min + (m * dk);
+    k_mag = k_lo + (m * dk);
 
     // associated frequency. Should this be turbulence velocity???? SHRW to address.
     f = k_mag * PeleC::h_prob_parm_device->u_in;
