@@ -124,6 +124,7 @@ bcnormal(
       // CAN REMOVE LATER - CHECK FOR DIVERGENCE - SUPER INEFFICIENT
       // START OF CAN REMOVE
       amrex::Real x_hat_temp[AMREX_SPACEDIM] = {0.0};
+      PeleC::h_prob_parm_device->divu_check = 0.0;
 
       // convert to normalized turbulence terms
       for(int i = 0; i < AMREX_SPACEDIM; i++) {
@@ -158,7 +159,7 @@ bcnormal(
         }
       }
 
-      PeleC::h_prob_parm_device->divu_check += 2.0 * constants::PI() / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
+      PeleC::h_prob_parm_device->divu_check *= 2.0 * constants::PI() / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
       // END JUNK
 
       //scale up the velocities
