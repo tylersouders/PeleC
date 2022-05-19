@@ -115,14 +115,51 @@ bcnormal(
             // replace t_hat with time for the Huang et al. method.
             // arg += PeleC::h_prob_parm_device->omega[n][m] * time;
             
-            // Check analytical divergence at a random point
-            divu_probe += PeleC::h_prob_parm_device-> 
             // Compute turbulence and convert the value from mks to cgs
             turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
 	               + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
           }
         }
       }
+
+      // CAN REMOVE LATER - CHECK FOR DIVERGENCE - SUPER INEFFICIENT
+      // START OF CAN REMOVE
+      amrex::Real x_hat_temp[AMREX_SPACEDIM] = {0.0};
+
+      // convert to normalized turbulence terms
+      for(int i = 0; i < AMREX_SPACEDIM; i++) {
+        // removing factor of 2.0 * constants::PI() for Huang et al. method (eq. 20)
+        x_hat_temp[i] = PeleC::h_prob_parm_device->xchk[i] * 2.0 * constants::PI() 
+        / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
+      }
+      // assume inflow is purely x-dimensional. Correct for inflow speed.
+      x_hat_temp[0] -= (2.0 * constants::PI() * PeleC::h_prob_parm_device->u_in * time)
+                   / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
+
+      // Start loop
+      for(int m = 0; m < PeleC::h_prob_parm_device->turb_num_modes; m++) {
+
+        for(int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
+
+          amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat_temp[0]
+                            + PeleC::h_prob_parm_device->k[1][n][m] * x_hat_temp[1]
+                            + PeleC::h_prob_parm_device->k[2][n][m] * x_hat_temp[2]
+                            + PeleC::h_prob_parm_device->omega[n][m] * time;
+  
+          // replace t_hat with time for the Huang et al. method.
+          // arg += PeleC::h_prob_parm_device->omega[n][m] * time;
+          
+          // Compute turbulence and convert the value from mks to cgs
+          PeleC::h_prob_parm_device->divu_check += (PeleC::h_prob_parm_device->k[0][n][m]*PeleC::h_prob_parm_device->q[0][n][m] +
+            PeleC::h_prob_parm_device->k[1][n][m]*PeleC::h_prob_parm_device->q[1][n][m] + 
+            PeleC::h_prob_parm_device->k[2][n][m]*PeleC::h_prob_parm_device->q[2][n][m]) * cos(arg) -
+            (PeleC::h_prob_parm_device->k[0][n][m]*PeleC::h_prob_parm_device->p[0][n][m] + 
+            PeleC::h_prob_parm_device->k[1][n][m]*PeleC::h_prob_parm_device->p[1][n][m] +
+            PeleC::h_prob_parm_device->k[2][n][m]*PeleC::h_prob_parm_device->p[2][n][m]) * sin(arg);
+        }
+      }
+
+      PeleC::h_prob_parm_device->divu_check += 2.0 * constants::PI() / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
 
       //scale up the velocities
       //for (int i=0; i < 3; i++) {

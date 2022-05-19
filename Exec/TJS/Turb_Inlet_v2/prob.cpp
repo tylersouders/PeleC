@@ -194,6 +194,7 @@ PeleC::problem_post_timestep()
        amrex::Print() << "TIME= " << time << " k[0]  = " << PeleC::h_prob_parm_device->k[0][5][10] << '\n';
        amrex::Print() << "TIME= " << time << " k[1]  = " << PeleC::h_prob_parm_device->k[1][5][10] << '\n';
        amrex::Print() << "TIME= " << time << " omega  = " << PeleC::h_prob_parm_device->omega[5][10] << '\n';
+       amrex::Print() << "TIME= " << time << " divu check = " << PeleC::h_prob_parm_device->divu_check << '\n';
    }
  }
 
