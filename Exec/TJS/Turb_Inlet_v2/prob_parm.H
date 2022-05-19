@@ -31,6 +31,7 @@ struct ProbParmDevice
   amrex::GpuArray<amrex::Array<amrex::Real, sampling_number>, 3> zeta;
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac;
   amrex::GpuArray<amrex::Real, NUM_SPECIES> molefrac;
+  amrex::Real divu_check = 0.0;
 }; // namespace ProbParm
 
 struct ProbParmHost
