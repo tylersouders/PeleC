@@ -89,6 +89,7 @@ bcnormal(
       // const amrex::Real t_hat = 2.0 * constants::PI() * time / tau;
       amrex::Real x_hat[AMREX_SPACEDIM]  = {0.0};
       amrex::Real turb_u[AMREX_SPACEDIM] = {0.0};
+      amrex::Real divu_probe = 0.0;
 
       // convert to normalized turbulence terms
       for(int i = 0; i < AMREX_SPACEDIM; i++) {
@@ -114,7 +115,9 @@ bcnormal(
 	  
             // replace t_hat with time for the Huang et al. method.
             // arg += PeleC::h_prob_parm_device->omega[n][m] * time;
-
+            
+            // Check analytical divergence at a random point
+            divu_probe += PeleC::h_prob_parm_device-> 
             // Compute turbulence and convert the value from mks to cgs
             turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
 	               + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
