@@ -79,6 +79,9 @@ bcnormal(
       // inflow
       // amrex::Print() << "starting bcnormal. x = " << x[0] << " " << x[1] << " " << x[2] << " " << '\n';
       
+      // Save the time for debug
+      PeleC::h_prob_parm_device->timechk = time;
+
       const amrex::Real* prob_lo = geomdata.ProbLo();
       const amrex::Real* prob_hi = geomdata.ProbHi();
 
@@ -100,24 +103,20 @@ bcnormal(
                    / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
       
       //amrex::Print() << "bcnormal check #1 (before loop) " << '\n';
-      
-      for(int i = 0; i < 3; i++) {
 
-        for(int m = 0; m < PeleC::h_prob_parm_device->turb_num_modes; m++) {
+      for(int m = 0; m < PeleC::h_prob_parm_device->turb_num_modes; m++) {
 
-          for(int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
+        for(int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
 
-            amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat[0]
-                              + PeleC::h_prob_parm_device->k[1][n][m] * x_hat[1]
-                              + PeleC::h_prob_parm_device->k[2][n][m] * x_hat[2]
-                              + PeleC::h_prob_parm_device->omega[n][m] * time;
-	  
-            // replace t_hat with time for the Huang et al. method.
-            // arg += PeleC::h_prob_parm_device->omega[n][m] * time;
-            
-            // Compute turbulence and convert the value from mks to cgs
+          amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat[0]
+                            + PeleC::h_prob_parm_device->k[1][n][m] * x_hat[1]
+                            + PeleC::h_prob_parm_device->k[2][n][m] * x_hat[2]
+                            + PeleC::h_prob_parm_device->omega[n][m] * time;
+          
+          // Compute turbulence and convert the value from mks to cgs
+          for(int i = 0; i < 3; i++){
             turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
-	               + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
+                + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
           }
         }
       }
@@ -160,6 +159,7 @@ bcnormal(
       }
 
       PeleC::h_prob_parm_device->divu_check += 2.0 * constants::PI() / (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
+      // END JUNK
 
       //scale up the velocities
       //for (int i=0; i < 3; i++) {
@@ -224,9 +224,9 @@ bcnormal(
       w = (wb - w_int) / (xb - xd) * (x[0] - xd) + w_int;
 
       // Outflow-specific
-      for (int n = 0; n < NUM_SPECIES; n++)
+      for (int n = 0; n < NUM_SPECIES; n++) {
 	s_ext[UFS + n] = s_int[UFS+n];
-      
+      }
       // amrex::Print() << "outflow bcnormal check (finished) " << '\n';
     }
 

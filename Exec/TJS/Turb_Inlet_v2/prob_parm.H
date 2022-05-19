@@ -33,6 +33,7 @@ struct ProbParmDevice
   amrex::GpuArray<amrex::Real, NUM_SPECIES> molefrac;
   amrex::Real xchk[3] = {0.0, 0.10, 0.10};
   amrex::Real divu_check = 0.0;
+  amrex::Real timechk = 0.0;
 }; // namespace ProbParm
 
 struct ProbParmHost
