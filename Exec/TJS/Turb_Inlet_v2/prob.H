@@ -89,7 +89,6 @@ bcnormal(
       // const amrex::Real t_hat = 2.0 * constants::PI() * time / tau;
       amrex::Real x_hat[AMREX_SPACEDIM]  = {0.0};
       amrex::Real turb_u[AMREX_SPACEDIM] = {0.0};
-      amrex::Real divu_probe = 0.0;
 
       // convert to normalized turbulence terms
       for(int i = 0; i < AMREX_SPACEDIM; i++) {
