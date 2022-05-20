@@ -44,7 +44,7 @@ pc_initdata(
   //  (prob_hi[1] - y) * (y - prob_lo[1]);
 
   // If flag is enabled, fill entire domain with turbulence using Huang's method
-  if (peleC::h_prob_parm_device->init_turb_fill) {
+  if (PeleC::h_prob_parm_device->init_turb_fill) {
 
     // Find cartesian location based on indices and dx (computed above)
     amrex::Real loc_factor = 2.0 * constants::PI() / 
@@ -60,7 +60,7 @@ pc_initdata(
         amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat
         + PeleC::h_prob_parm_device->k[1][n][m] * y_hat
         + PeleC::h_prob_parm_device->k[2][n][m] * z_hat
-        + PeleC::h_prob_parm_device->omega[n][m] * time;
+        + PeleC::h_prob_parm_device->omega[n][m] * 0.0; //time = 0.0 becase init
         
         // Compute turbulence
         for(int i = 0; i < 3; i++){
@@ -73,7 +73,7 @@ pc_initdata(
 
   // Set the state
   state(i, j, k, URHO) = PeleC::h_prob_parm_device->rho_in;
-  if (peleC::h_prob_parm_device->init_turb_fill) {
+  if (PeleC::h_prob_parm_device->init_turb_fill) {
     state(i, j, k, UMX) = turb_u[0] * PeleC::h_prob_parm_device->rho_in;
     state(i, j, k, UMY) = turb_u[1] * PeleC::h_prob_parm_device->rho_in;
     state(i, j, k, UMZ) = turb_u[2] * PeleC::h_prob_parm_device->rho_in;
@@ -173,7 +173,7 @@ bcnormal(
         w = 0.0;
 
       }
-      
+
       // amrex::Print() << "Turb Inlet Vel (u, v, w) = (" << u << ", " << v << ", " << w << ")\n";
       eint =  PeleC::h_prob_parm_device->e_in;
       T = PeleC::h_prob_parm_device->T_in;
