@@ -34,6 +34,8 @@ struct ProbParmDevice
   amrex::Real xchk[3] = {0.0, 0.10, 0.10};
   amrex::Real divu_check = 0.0;
   amrex::Real timechk = 0.0;
+  static const bool init_turb_fill = 0;
+  static const bool do_turb_inlet = 0;
 }; // namespace ProbParm
 
 struct ProbParmHost
