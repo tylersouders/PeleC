@@ -180,6 +180,7 @@ bcnormal(
       }
 
       // amrex::Print() << "Turb Inlet Vel (u, v, w) = (" << u << ", " << v << ", " << w << ")\n";
+      auto eos = pele::physics::PhysicsType::eos();
       eos.PYT2RE(
         PeleC::h_prob_parm_device->p_in, PeleC::h_prob_parm_device->massfrac.begin(), PeleC::h_prob_parm_device->T_in,
         rho, PeleC::h_prob_parm_device->e_in);
