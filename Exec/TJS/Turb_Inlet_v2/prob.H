@@ -122,7 +122,7 @@ bcnormal(
       const amrex::Real* prob_lo = geomdata.ProbLo();
       const amrex::Real* prob_hi = geomdata.ProbHi();
 
-      rho = PeleC::h_prob_parm_device->rho_in;
+      const amrex::Real rho0 = PeleC::h_prob_parm_device->rho_in;
 
       if(PeleC::h_prob_parm_device->do_turb_inlet) {
 
@@ -165,6 +165,11 @@ bcnormal(
         u = turb_u[0]+PeleC::h_prob_parm_device->u_in;
         v = turb_u[1];
         w = turb_u[2];
+
+        // Compute adjustment for rho to account for velocity increase
+        amrex::Real temp_ratio = PeleC::h_prob_parm_device->u_in / std::sqrt(
+          std::pow(u, 2.0) + std::pow(v, 2.0) + std::pow(w, 2.0));
+        rho = rho0 * std::pow(temp_ratio, 2.0);
       
       } else {
 
@@ -178,7 +183,8 @@ bcnormal(
       eint =  PeleC::h_prob_parm_device->e_in;
       T = PeleC::h_prob_parm_device->T_in;
       for (int n = 0; n < NUM_SPECIES; n++)
-        s_ext[UFS + n] = PeleC::h_prob_parm_device->rho_in * PeleC::h_prob_parm_device->massfrac[n];
+        //s_ext[UFS + n] = PeleC::h_prob_parm_device->rho_in * PeleC::h_prob_parm_device->massfrac[n];
+        s_ext[UFS + n] = rho * PeleC::h_prob_parm_device->massfrac[n];
       // amrex::Print() << "bcnormal check #3 (finished) " << '\n';
 
     } else if (sgn == -1) {
