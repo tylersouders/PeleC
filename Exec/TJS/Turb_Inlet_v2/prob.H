@@ -170,7 +170,7 @@ bcnormal(
         amrex::Real temp_ratio = PeleC::h_prob_parm_device->u_in / std::sqrt(
           std::pow(u, 2.0) + std::pow(v, 2.0) + std::pow(w, 2.0));
         rho = rho0 * std::pow(temp_ratio, 2.0);
-      
+
       } else {
 
         u = PeleC::h_prob_parm_device->u_in;
@@ -180,6 +180,9 @@ bcnormal(
       }
 
       // amrex::Print() << "Turb Inlet Vel (u, v, w) = (" << u << ", " << v << ", " << w << ")\n";
+      eos.PYT2RE(
+        PeleC::h_prob_parm_device->p_in, PeleC::h_prob_parm_device->massfrac.begin(), PeleC::h_prob_parm_device->T_in,
+        rho, PeleC::h_prob_parm_device->e_in);
       eint =  PeleC::h_prob_parm_device->e_in;
       T = PeleC::h_prob_parm_device->T_in;
       for (int n = 0; n < NUM_SPECIES; n++)
