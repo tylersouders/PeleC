@@ -170,6 +170,7 @@ bcnormal(
         //amrex::Real temp_ratio = PeleC::h_prob_parm_device->u_in / std::sqrt(
         //  std::pow(u, 2.0) + std::pow(v, 2.0) + std::pow(w, 2.0));
         //rho = rho0 * std::pow(temp_ratio, 2.0);
+        rho = rho0;
 
       } else {
 

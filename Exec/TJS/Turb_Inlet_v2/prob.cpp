@@ -33,13 +33,13 @@ extern "C" {
   // Parse params for turbulence inlet. User can set u_in and I% at runtime
     amrex::ParmParse pp("prob");
     pp.query("turb_intensity", PeleC::h_prob_parm_device->turb_intensity);
-    pp.query("u_in", PeleC::h_prob_parm_device->u_in);
+    pp.query("u_input", PeleC::h_prob_parm_device->u_in);
     pp.query("init_turb_fill", PeleC::h_prob_parm_device->init_turb_fill);
     pp.query("do_turb_inlet", PeleC::h_prob_parm_device->do_turb_inlet);
 
   // Compute turbulence length scale based on inlet domain size. Assume x-dimension is much larger than y or z.
   // Currently computing as 1/4th of the domain size, can change if necessary
-    PeleC::h_prob_parm_device->turb_length_scale = 0.25 * amrex::min<amrex::Real>(probhi[1]-problo[1], probhi[2]-problo[2]);
+    PeleC::h_prob_parm_device->turb_length_scale = 0.33 * amrex::min<amrex::Real>(probhi[1]-problo[1]);
 
   // Compute base (no AMR) grid density
     const amrex::Real dx_base = (probhi[1] - problo[1]) / n_cells[1];
@@ -148,12 +148,12 @@ extern "C" {
     amrex::Print() << "Checkpoint #4 (after loop) " << '\n';
   }
   
-  pp.query("p_init", PeleC::h_prob_parm_device->p_init);
-  pp.query("T_init", PeleC::h_prob_parm_device->T_init);
-  pp.query("phi_init", PeleC::h_prob_parm_device->phi_in);
+  pp.query("p_input", PeleC::h_prob_parm_device->p_init);
+  pp.query("T_input", PeleC::h_prob_parm_device->T_init);
+  pp.query("phi_input", PeleC::h_prob_parm_device->phi_in);
 
-  pp.query("p_in", PeleC::h_prob_parm_device->p_in);
-  pp.query("T_in", PeleC::h_prob_parm_device->T_in);
+  pp.query("p_input", PeleC::h_prob_parm_device->p_in);
+  pp.query("T_input", PeleC::h_prob_parm_device->T_in);
 
   for (int n = 0; n < NUM_SPECIES; n++)
     PeleC::h_prob_parm_device->molefrac[n] = 0.0;
