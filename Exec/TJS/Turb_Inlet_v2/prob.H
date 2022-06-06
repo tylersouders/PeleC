@@ -121,7 +121,7 @@ bcnormal(
 
       const amrex::Real* prob_lo = geomdata.ProbLo();
       const amrex::Real* prob_hi = geomdata.ProbHi();
-      const amrex::Real* z_len = prob_hi[2] - prob_lo[2];
+      const amrex::Real z_len = prob_hi[2] - prob_lo[2];
       const amrex::Real rho0 = PeleC::h_prob_parm_device->rho_in;
 
       const bool periodic_locationcheck = (x[2] >= 0.03 * z_len && x[2] <= 0.97 * z_len);
@@ -179,6 +179,7 @@ bcnormal(
         u = PeleC::h_prob_parm_device->u_in;
         v = 0.0;
         w = 0.0;
+	rho = rho0;
 
       }
 

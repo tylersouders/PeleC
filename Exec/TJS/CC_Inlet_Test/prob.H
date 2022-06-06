@@ -125,8 +125,8 @@ bcnormal(
       // Save the time for debug
       PeleC::h_prob_parm_device->timechk = time;
 
-      const amrex::Real* prob_lo = geomdata.ProbLo();
-      const amrex::Real* prob_hi = geomdata.ProbHi();
+      // const amrex::Real* prob_lo = geomdata.ProbLo();
+      // const amrex::Real* prob_hi = geomdata.ProbHi();
 
       if(PeleC::h_prob_parm_device->do_turb_inlet) {
 
@@ -217,7 +217,6 @@ bcnormal(
       const amrex::Real w_ext = (w_b - w_int) / (x_b - x_int) * (x_ext - x_int) + w_int;
 
       // Use eos to get eint and rho at ghost cell
-      auto eos = pele::physics::PhysicsType::eos();
       eos.PYT2RE(p_ext, massfrac_int.begin(), T_ext, rho, eint);
 
       // Get interior (point d) values
