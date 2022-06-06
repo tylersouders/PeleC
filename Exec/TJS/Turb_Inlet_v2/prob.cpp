@@ -51,7 +51,7 @@ extern "C" {
 
   // Adjust for periodic z-dir
   // Compute max z wavenumber
-    amrex::Real Nzmax, intpart, fracpart
+    amrex::Real Nzmax, intpart, fracpart;
     const amrex::Real kz_max = 1.0 / (2.0 * dx_base);
     Nzmax = kz_max / (2.0 * constants::PI() / zlen);
     fracpart = std::modf(Nzmax, &intpart);
