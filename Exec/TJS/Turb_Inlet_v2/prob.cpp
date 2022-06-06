@@ -43,13 +43,23 @@ extern "C" {
 
   // Compute base (no AMR) grid density
     const amrex::Real dx_base = (probhi[1] - problo[1]) / n_cells[1];
+    const amrex::Real zlen = (probhi[2] - problo[2]);
 
   // Compute wavenumber limits (k_lo = largest length scale, k_hi = smallest)
     const amrex::Real k_lo = 1.0 / PeleC::h_prob_parm_device->turb_length_scale;
-    const amrex::Real k_hi = 1.0 / (2.0 * dx_base);
+    // const amrex::Real k_hi = 1.0 / (2.0 * dx_base);
+
+  // Adjust for periodic z-dir
+  // Compute max z wavenumber
+    amrex::Real Nzmax, intpart, fracpart
+    const amrex::Real kz_max = 1.0 / (2.0 * dx_base);
+    Nzmax = kz_max / (2.0 * constants::PI() / zlen);
+    fracpart = std::modf(Nzmax, &intpart);
+    PeleC::h_prob_parm_device->turb_num_modes = intpart;
 
   // Compute dk based on a discretization of M different discrete wavenumbers
-    const amrex::Real dk = (k_hi - k_lo) / PeleC::h_prob_parm_device->turb_num_modes;
+    // const amrex::Real dk = (k_hi - k_lo) / PeleC::h_prob_parm_device->turb_num_modes;
+    const amrex::Real dk = 2.0 * constants::PI() / zlen;
 
   // Initialize a few relevant variables.
     amrex::Vector<amrex::Real> zeta_cross_k(3);

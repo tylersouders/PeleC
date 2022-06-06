@@ -124,9 +124,10 @@ bcnormal(
       const amrex::Real z_len = prob_hi[2] - prob_lo[2];
       const amrex::Real rho0 = PeleC::h_prob_parm_device->rho_in;
 
-      const bool periodic_locationcheck = (x[2] >= 0.03 * z_len && x[2] <= 0.97 * z_len);
+      // const bool periodic_locationcheck = (x[2] >= 0.03 * z_len && x[2] <= 0.97 * z_len);
 
-      if(PeleC::h_prob_parm_device->do_turb_inlet && periodic_locationcheck) {
+      // if(PeleC::h_prob_parm_device->do_turb_inlet && periodic_locationcheck) {
+      if(PeleC::h_prob_parm_device->do_turb_inlet) {
 
         // Compute turbulence inflow as described in Huang, 2010 Generalized turbulent inflow
 
