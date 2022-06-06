@@ -121,10 +121,12 @@ bcnormal(
 
       const amrex::Real* prob_lo = geomdata.ProbLo();
       const amrex::Real* prob_hi = geomdata.ProbHi();
-
+      const amrex::Real* z_len = prob_hi[2] - prob_lo[2];
       const amrex::Real rho0 = PeleC::h_prob_parm_device->rho_in;
 
-      if(PeleC::h_prob_parm_device->do_turb_inlet) {
+      const bool periodic_locationcheck = (x[2] >= 0.03 * z_len && x[2] <= 0.97 * z_len);
+
+      if(PeleC::h_prob_parm_device->do_turb_inlet && periodic_locationcheck) {
 
         // Compute turbulence inflow as described in Huang, 2010 Generalized turbulent inflow
 
@@ -180,11 +182,6 @@ bcnormal(
 
       }
 
-      // amrex::Print() << "Turb Inlet Vel (u, v, w) = (" << u << ", " << v << ", " << w << ")\n";
-      //auto eos = pele::physics::PhysicsType::eos();
-      //eos.PYT2RE(
-      //  PeleC::h_prob_parm_device->p_in, PeleC::h_prob_parm_device->massfrac.begin(), PeleC::h_prob_parm_device->T_in,
-      //  rho, PeleC::h_prob_parm_device->e_in);
       eint =  PeleC::h_prob_parm_device->e_in;
       T = PeleC::h_prob_parm_device->T_in;
       for (int n = 0; n < NUM_SPECIES; n++)
