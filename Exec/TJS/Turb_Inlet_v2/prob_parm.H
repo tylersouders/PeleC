@@ -30,7 +30,7 @@ int compute_turb_num_modes() {
   amrex::Real Nzmax, intpart, fracpart;
   const amrex::Real kz_max = 1.0 / (2.0 * dx_base);
 
-  Nzmax = kz_max / (2.0 * constants::PI() / PeleC::h_prob_parm_device->turb_length_scale);
+  Nzmax = kz_max / (2.0 * constants::PI() / Lz);
   fracpart = std::modf(Nzmax, &intpart);
   return intpart - 1; // Offset to account for 1 index in paper
 
