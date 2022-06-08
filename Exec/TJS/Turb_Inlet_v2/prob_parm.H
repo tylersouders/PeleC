@@ -21,7 +21,7 @@ struct ProbParmDevice
   amrex::Real turb_length_scale = 0.002;
   amrex::Real turb_intensity = 7;
   amrex::Real Ls_prefactor = 1.5;
-  static const int turb_num_modes = 100;
+  static int turb_num_modes = 100;
   static const int sampling_number = 100;
   amrex::GpuArray<amrex::Array<amrex::Array<amrex::Real, turb_num_modes>, sampling_number>, 3> k;
   amrex::GpuArray<amrex::Array<amrex::Array<amrex::Real, turb_num_modes>, sampling_number>, 3> p;

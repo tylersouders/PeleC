@@ -67,7 +67,7 @@ extern "C" {
     PeleC::h_prob_parm_device->p.resize(3);
     PeleC::h_prob_parm_device->q.resize(3);
     PeleC::h_prob_parm_device->xi.resize(3);
-    PeleC::h_prob_parm_device->theta.resize(3);
+    PeleC::h_prob_parm_device->zeta.resize(3);
     PeleC::h_prob_parm_device->omega.resize(PeleC::h_prob_parm_device->sampling_number);
 
     for (int i = 0; i < 3; i++){
@@ -76,7 +76,7 @@ extern "C" {
       PeleC::h_prob_parm_device->p[i].resize(PeleC::h_prob_parm_device->sampling_number);
       PeleC::h_prob_parm_device->q[i].resize(PeleC::h_prob_parm_device->sampling_number);
       PeleC::h_prob_parm_device->xi[i].resize(PeleC::h_prob_parm_device->sampling_number);
-      PeleC::h_prob_parm_device->theta[i].resize(PeleC::h_prob_parm_device->sampling_number);
+      PeleC::h_prob_parm_device->zeta[i].resize(PeleC::h_prob_parm_device->sampling_number);
 
       for (int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++){
 
@@ -84,7 +84,7 @@ extern "C" {
         PeleC::h_prob_parm_device->p[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
         PeleC::h_prob_parm_device->q[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
         PeleC::h_prob_parm_device->xi[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
-        PeleC::h_prob_parm_device->theta[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
+        PeleC::h_prob_parm_device->zeta[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
 
       }
 
