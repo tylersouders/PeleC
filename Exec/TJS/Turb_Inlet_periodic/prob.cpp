@@ -63,26 +63,26 @@ extern "C" {
     }
 
     // Need to initialize the vector sizes based on the computed values above
-    PeleC::h_prob_parm_device->k.resize(3);
-    PeleC::h_prob_parm_device->p.resize(3);
-    PeleC::h_prob_parm_device->q.resize(3);
-    PeleC::h_prob_parm_device->xi.resize(3);
-    PeleC::h_prob_parm_device->zeta.resize(3);
-    PeleC::h_prob_parm_device->omega.resize(PeleC::h_prob_parm_device->sampling_number);
+    PeleC::h_prob_parm_host->k.resize(3);
+    PeleC::h_prob_parm_host->p.resize(3);
+    PeleC::h_prob_parm_host->q.resize(3);
+    PeleC::h_prob_parm_host->xi.resize(3);
+    PeleC::h_prob_parm_host->zeta.resize(3);
+    PeleC::h_prob_parm_host->omega.resize(PeleC::h_prob_parm_device->sampling_number);
 
     for (int i = 0; i < 3; i++){
 
-      PeleC::h_prob_parm_device->k[i].resize(PeleC::h_prob_parm_device->sampling_number);
-      PeleC::h_prob_parm_device->p[i].resize(PeleC::h_prob_parm_device->sampling_number);
-      PeleC::h_prob_parm_device->q[i].resize(PeleC::h_prob_parm_device->sampling_number);
-      PeleC::h_prob_parm_device->xi[i].resize(PeleC::h_prob_parm_device->sampling_number);
-      PeleC::h_prob_parm_device->zeta[i].resize(PeleC::h_prob_parm_device->sampling_number);
+      PeleC::h_prob_parm_host->k[i].resize(PeleC::h_prob_parm_device->sampling_number);
+      PeleC::h_prob_parm_host->p[i].resize(PeleC::h_prob_parm_device->sampling_number);
+      PeleC::h_prob_parm_host->q[i].resize(PeleC::h_prob_parm_device->sampling_number);
+      PeleC::h_prob_parm_host->xi[i].resize(PeleC::h_prob_parm_device->sampling_number);
+      PeleC::h_prob_parm_host->zeta[i].resize(PeleC::h_prob_parm_device->sampling_number);
 
       for (int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++){
 
-        PeleC::h_prob_parm_device->k[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
-        PeleC::h_prob_parm_device->p[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
-        PeleC::h_prob_parm_device->q[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
+        PeleC::h_prob_parm_host->k[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
+        PeleC::h_prob_parm_host->p[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
+        PeleC::h_prob_parm_host->q[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
 
       }
 
@@ -90,7 +90,7 @@ extern "C" {
 
     for (int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++){
 
-      PeleC::h_prob_parm_device->omega[n].resize(PeleC::h_prob_parm_device->turb_num_modes);
+      PeleC::h_prob_parm_host->omega[n].resize(PeleC::h_prob_parm_device->turb_num_modes);
     
     }
 
@@ -104,8 +104,8 @@ extern "C" {
     for (int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
       // populate xi and zeta
       for (int i = 0; i < 3; i++) {
-        PeleC::h_prob_parm_device->xi[i][n] = amrex::RandomNormal(0.0, 1.0);
-        PeleC::h_prob_parm_device->zeta[i][n] = amrex::RandomNormal(0.0, 1.0);
+        PeleC::h_prob_parm_host->xi[i][n] = amrex::RandomNormal(0.0, 1.0);
+        PeleC::h_prob_parm_host->zeta[i][n] = amrex::RandomNormal(0.0, 1.0);
       }
     }
 
@@ -130,22 +130,22 @@ extern "C" {
         phi   = amrex::Random() * constants::PI();
 
       // Convert to cartesian coords
-        PeleC::h_prob_parm_device->k[0][n][m] = k_mag * cos(theta) * sin(phi);
-        PeleC::h_prob_parm_device->k[1][n][m] = k_mag * sin(theta) * sin(phi);
-        PeleC::h_prob_parm_device->k[2][n][m] = k_mag * cos(phi);
+        PeleC::h_prob_parm_host->k[0][n][m] = k_mag * cos(theta) * sin(phi);
+        PeleC::h_prob_parm_host->k[1][n][m] = k_mag * sin(theta) * sin(phi);
+        PeleC::h_prob_parm_host->k[2][n][m] = k_mag * cos(phi);
 
       // Generate random values for getting p and q
-        PeleC::h_prob_parm_device->omega[n][m] = amrex::RandomNormal(0.0, omega_upper_bound);
+        PeleC::h_prob_parm_host->omega[n][m] = amrex::RandomNormal(0.0, omega_upper_bound);
         randa = amrex::Random();
 
       // Calculate p, q
 
-        xi_cross_k[0] = (PeleC::h_prob_parm_device->xi[1][n] * PeleC::h_prob_parm_device->k[2][n][m]
-         - PeleC::h_prob_parm_device->k[1][n][m] * PeleC::h_prob_parm_device->xi[2][n]);
-        xi_cross_k[1] = (PeleC::h_prob_parm_device->xi[2][n] * PeleC::h_prob_parm_device->k[0][n][m]
-         - PeleC::h_prob_parm_device->k[2][n][m] * PeleC::h_prob_parm_device->xi[0][n]);
-        xi_cross_k[2] = (PeleC::h_prob_parm_device->xi[0][n] * PeleC::h_prob_parm_device->k[1][n][m]
-         - PeleC::h_prob_parm_device->k[0][n][m] * PeleC::h_prob_parm_device->xi[1][n]);
+        xi_cross_k[0] = (PeleC::h_prob_parm_host->xi[1][n] * PeleC::h_prob_parm_host->k[2][n][m]
+         - PeleC::h_prob_parm_host->k[1][n][m] * PeleC::h_prob_parm_host->xi[2][n]);
+        xi_cross_k[1] = (PeleC::h_prob_parm_host->xi[2][n] * PeleC::h_prob_parm_host->k[0][n][m]
+         - PeleC::h_prob_parm_host->k[2][n][m] * PeleC::h_prob_parm_host->xi[0][n]);
+        xi_cross_k[2] = (PeleC::h_prob_parm_host->xi[0][n] * PeleC::h_prob_parm_host->k[1][n][m]
+         - PeleC::h_prob_parm_host->k[0][n][m] * PeleC::h_prob_parm_host->xi[1][n]);
 
         cross_mag = std::sqrt(std::pow(xi_cross_k[0],2.0) +
           std::pow(xi_cross_k[1],2.0) + std::pow(xi_cross_k[2],2.0));
@@ -153,16 +153,16 @@ extern "C" {
         root_arg = randa * 4.0 * E / PeleC::h_prob_parm_device->sampling_number;
 
         for (int i = 0; i < 3; i++) {
-          PeleC::h_prob_parm_device->p[i][n][m] = (xi_cross_k[i] / cross_mag) * std::sqrt(root_arg);
+          PeleC::h_prob_parm_host->p[i][n][m] = (xi_cross_k[i] / cross_mag) * std::sqrt(root_arg);
         }
 
 
-        zeta_cross_k[0] = (PeleC::h_prob_parm_device->zeta[1][n] * PeleC::h_prob_parm_device->k[2][n][m]
-         - PeleC::h_prob_parm_device->k[1][n][m] * PeleC::h_prob_parm_device->zeta[2][n]);
-        zeta_cross_k[1] = (PeleC::h_prob_parm_device->zeta[2][n] * PeleC::h_prob_parm_device->k[0][n][m]
-         - PeleC::h_prob_parm_device->k[2][n][m] * PeleC::h_prob_parm_device->zeta[0][n]);
-        zeta_cross_k[2] = (PeleC::h_prob_parm_device->zeta[0][n] * PeleC::h_prob_parm_device->k[1][n][m]
-         - PeleC::h_prob_parm_device->k[0][n][m] * PeleC::h_prob_parm_device->zeta[1][n]);
+        zeta_cross_k[0] = (PeleC::h_prob_parm_host->zeta[1][n] * PeleC::h_prob_parm_host->k[2][n][m]
+         - PeleC::h_prob_parm_host->k[1][n][m] * PeleC::h_prob_parm_host->zeta[2][n]);
+        zeta_cross_k[1] = (PeleC::h_prob_parm_host->zeta[2][n] * PeleC::h_prob_parm_host->k[0][n][m]
+         - PeleC::h_prob_parm_host->k[2][n][m] * PeleC::h_prob_parm_host->zeta[0][n]);
+        zeta_cross_k[2] = (PeleC::h_prob_parm_host->zeta[0][n] * PeleC::h_prob_parm_host->k[1][n][m]
+         - PeleC::h_prob_parm_host->k[0][n][m] * PeleC::h_prob_parm_host->zeta[1][n]);
 
         cross_mag = std::sqrt(std::pow(zeta_cross_k[0],2.0) +
           std::pow(zeta_cross_k[1],2.0) + std::pow(zeta_cross_k[2],2.0));
@@ -170,12 +170,12 @@ extern "C" {
         root_arg = (1.0 - randa) * 4.0 * E / PeleC::h_prob_parm_device->sampling_number;
       // amrex::Print() << "Root Arg = " << root_arg << '\n' << "Random# = " << randa << '\n' << "E = " << E << '\n';
         for (int i = 0; i < 3; i++) {
-          PeleC::h_prob_parm_device->q[i][n][m] = (zeta_cross_k[i] / cross_mag) * std::sqrt(root_arg);
+          PeleC::h_prob_parm_host->q[i][n][m] = (zeta_cross_k[i] / cross_mag) * std::sqrt(root_arg);
         }
 
       // Normalize k to k_tilde using the lowest wave number (equation 21 Huang 2010)
         for (int i = 0; i < 3; i++) {
-         PeleC::h_prob_parm_device->k[i][n][m] /= k_lo;
+         PeleC::h_prob_parm_host->k[i][n][m] /= k_lo;
 
        }
 
@@ -187,11 +187,11 @@ extern "C" {
     amrex::Print() << "Checkpoint #4 (after loop) " << '\n';
   }
   
-  pp.query("p_input", PeleC::h_prob_parm_device->p_init);
+  pp.query("p_input", PeleC::h_prob_parm_host->p_init);
   pp.query("T_input", PeleC::h_prob_parm_device->T_init);
-  pp.query("phi_input", PeleC::h_prob_parm_device->phi_in);
+  pp.query("phi_input", PeleC::h_prob_parm_host->phi_in);
 
-  pp.query("p_input", PeleC::h_prob_parm_device->p_in);
+  pp.query("p_input", PeleC::h_prob_parm_host->p_in);
   pp.query("T_input", PeleC::h_prob_parm_device->T_in);
 
   for (int n = 0; n < NUM_SPECIES; n++)
@@ -200,8 +200,8 @@ extern "C" {
   // for CH4-air
   const amrex::Real a = 5.0;
   
-  PeleC::h_prob_parm_device->molefrac[O2_ID] = 1.0 / (1.0 + (PeleC::h_prob_parm_device->phi_in / a)  + (0.79 / 0.21));
-  PeleC::h_prob_parm_device->molefrac[C3H8_ID] = PeleC::h_prob_parm_device->phi_in * PeleC::h_prob_parm_device->molefrac[O2_ID] / a;
+  PeleC::h_prob_parm_device->molefrac[O2_ID] = 1.0 / (1.0 + (PeleC::h_prob_parm_host->phi_in / a)  + (0.79 / 0.21));
+  PeleC::h_prob_parm_device->molefrac[C3H8_ID] = PeleC::h_prob_parm_host->phi_in * PeleC::h_prob_parm_device->molefrac[O2_ID] / a;
   PeleC::h_prob_parm_device->molefrac[N2_ID] = 1.0 - PeleC::h_prob_parm_device->molefrac[C3H8_ID] - PeleC::h_prob_parm_device->molefrac[O2_ID];
 
   // for initializing the domain with "engineering air"
@@ -214,7 +214,7 @@ extern "C" {
 
   // Initialize density and energy from mass fractions, T and P.
   eos.PYT2RE(
-    PeleC::h_prob_parm_device->p_in, PeleC::h_prob_parm_device->massfrac.begin(), PeleC::h_prob_parm_device->T_in,
+    PeleC::h_prob_parm_host->p_in, PeleC::h_prob_parm_device->massfrac.begin(), PeleC::h_prob_parm_device->T_in,
     PeleC::h_prob_parm_device->rho_in, PeleC::h_prob_parm_device->e_in);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
@@ -228,11 +228,11 @@ void
 PeleC::problem_post_timestep()
 {
  if (amrex::ParallelDescriptor::IOProcessor()) {
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " p[0]  = " << PeleC::h_prob_parm_device->p[0][5][10] << '\n';
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " q[0]  = " << PeleC::h_prob_parm_device->q[0][5][10] << '\n';
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " k[0]  = " << PeleC::h_prob_parm_device->k[0][5][10] << '\n';
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " k[1]  = " << PeleC::h_prob_parm_device->k[1][5][10] << '\n';
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " omega  = " << PeleC::h_prob_parm_device->omega[5][10] << '\n';
+   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " p[0]  = " << PeleC::h_prob_parm_host->p[0][5][10] << '\n';
+   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " q[0]  = " << PeleC::h_prob_parm_host->q[0][5][10] << '\n';
+   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " k[0]  = " << PeleC::h_prob_parm_host->k[0][5][10] << '\n';
+   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " k[1]  = " << PeleC::h_prob_parm_host->k[1][5][10] << '\n';
+   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " omega  = " << PeleC::h_prob_parm_host->omega[5][10] << '\n';
    amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " divu_check = " << PeleC::h_prob_parm_device->divu_check << '\n';
  }
 }
