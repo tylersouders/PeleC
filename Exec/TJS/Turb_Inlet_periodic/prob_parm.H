@@ -22,7 +22,7 @@ struct ProbParmDevice
   amrex::Real turb_length_scale = 0.002;
   amrex::Real turb_intensity = 7;
   amrex::Real Ls_prefactor = 1.5;
-  static const int turb_num_modes = compute_turb_num_modes();
+  static const int turb_num_modes = 100;
   static const int sampling_number = 100;
   amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> k;
   amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> p;
