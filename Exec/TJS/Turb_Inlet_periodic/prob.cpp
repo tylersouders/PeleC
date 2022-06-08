@@ -83,8 +83,6 @@ extern "C" {
         PeleC::h_prob_parm_device->k[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
         PeleC::h_prob_parm_device->p[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
         PeleC::h_prob_parm_device->q[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
-        PeleC::h_prob_parm_device->xi[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
-        PeleC::h_prob_parm_device->zeta[i][n].resize(PeleC::h_prob_parm_device->turb_num_modes);
 
       }
 
