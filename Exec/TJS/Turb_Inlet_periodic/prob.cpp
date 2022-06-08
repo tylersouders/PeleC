@@ -187,11 +187,11 @@ extern "C" {
     amrex::Print() << "Checkpoint #4 (after loop) " << '\n';
   }
   
-  pp.query("p_input", PeleC::prob_parm_host->p_init);
+  pp.query("p_input", PeleC::prob_parm_device->p_init);
   pp.query("T_input", PeleC::h_prob_parm_device->T_init);
-  pp.query("phi_input", PeleC::prob_parm_host->phi_in);
+  pp.query("phi_input", PeleC::prob_parm_device->phi_in);
 
-  pp.query("p_input", PeleC::prob_parm_host->p_in);
+  pp.query("p_input", PeleC::prob_parm_device->p_in);
   pp.query("T_input", PeleC::h_prob_parm_device->T_in);
 
   for (int n = 0; n < NUM_SPECIES; n++)
@@ -200,8 +200,8 @@ extern "C" {
   // for CH4-air
   const amrex::Real a = 5.0;
   
-  PeleC::h_prob_parm_device->molefrac[O2_ID] = 1.0 / (1.0 + (PeleC::prob_parm_host->phi_in / a)  + (0.79 / 0.21));
-  PeleC::h_prob_parm_device->molefrac[C3H8_ID] = PeleC::prob_parm_host->phi_in * PeleC::h_prob_parm_device->molefrac[O2_ID] / a;
+  PeleC::h_prob_parm_device->molefrac[O2_ID] = 1.0 / (1.0 + (PeleC::prob_parm_device->phi_in / a)  + (0.79 / 0.21));
+  PeleC::h_prob_parm_device->molefrac[C3H8_ID] = PeleC::prob_parm_device->phi_in * PeleC::h_prob_parm_device->molefrac[O2_ID] / a;
   PeleC::h_prob_parm_device->molefrac[N2_ID] = 1.0 - PeleC::h_prob_parm_device->molefrac[C3H8_ID] - PeleC::h_prob_parm_device->molefrac[O2_ID];
 
   // for initializing the domain with "engineering air"
@@ -214,7 +214,7 @@ extern "C" {
 
   // Initialize density and energy from mass fractions, T and P.
   eos.PYT2RE(
-    PeleC::prob_parm_host->p_in, PeleC::h_prob_parm_device->massfrac.begin(), PeleC::h_prob_parm_device->T_in,
+    PeleC::prob_parm_device->p_in, PeleC::h_prob_parm_device->massfrac.begin(), PeleC::h_prob_parm_device->T_in,
     PeleC::h_prob_parm_device->rho_in, PeleC::h_prob_parm_device->e_in);
 
   if (amrex::ParallelDescriptor::IOProcessor()) {
