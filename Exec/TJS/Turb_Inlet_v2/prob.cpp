@@ -47,7 +47,7 @@ extern "C" {
 
   // Compute wavenumber limits (k_lo = largest length scale, k_hi = smallest)
     const amrex::Real k_lo = 1.0 / PeleC::h_prob_parm_device->turb_length_scale;
-    // const amrex::Real k_hi = 1.0 / (2.0 * dx_base);
+    const amrex::Real k_hi = 1.0 / (2.0 * dx_base);
 
   // Adjust for periodic z-dir
   // Compute max z wavenumber
