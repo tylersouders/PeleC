@@ -42,13 +42,6 @@ struct ProbParmDevice
 struct ProbParmHost
 {
 
-  amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> k;
-  amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> p;
-  amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> q;
-  amrex::Vector<amrex::Vector<amrex::Real>> omega;
-  amrex::Vector<amrex::Vector<amrex::Real>> xi;
-  amrex::Vector<amrex::Vector<amrex::Real>> zeta;
-
   ProbParmHost() {}
 };
 
