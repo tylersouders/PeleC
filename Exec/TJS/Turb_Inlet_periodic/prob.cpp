@@ -222,6 +222,14 @@ extern "C" {
   }
 
   // Get pointer to variables p, q, omega, and k and cast to device
+  PeleC::prob_parm_host->k.resize(
+    PeleC::prob_parm_host->h_k.size());
+  PeleC::prob_parm_host->p.resize(
+    PeleC::prob_parm_host->p_k.size());
+  PeleC::prob_parm_host->q.resize(
+    PeleC::prob_parm_host->q_k.size());
+  PeleC::prob_parm_host->omega.resize(
+    PeleC::prob_parm_host->omega_k.size());
   amrex::Gpu::copy(
     amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_k.begin(),
     PeleC::prob_parm_host->h_k.end(),
