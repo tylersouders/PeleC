@@ -53,7 +53,8 @@ struct ProbParmHost
   amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> zeta;
   ProbParmHost() 
   : k(0), p(0), q(0), omega(0), xi(0), zeta(0);
-  {}
+  {
+  }
 };
 
 #endif
