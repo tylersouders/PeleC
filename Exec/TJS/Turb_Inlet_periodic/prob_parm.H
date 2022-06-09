@@ -24,18 +24,10 @@ struct ProbParmDevice
   amrex::Real Ls_prefactor = 1.5;
   int turb_num_modes = 100;
   static const int sampling_number = 100;
-  // amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> k;
-  // amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> p;
-  // amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> q;
-  // amrex::Vector<amrex::Vector<amrex::Real>> omega;
-  // amrex::Vector<amrex::Vector<amrex::Real>> xi;
-  // amrex::Vector<amrex::Vector<amrex::Real>> zeta;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>>> k;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>>> p;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>>> q;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> omega;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> xi;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> zeta;
+  amrex::Real* k = nullptr;
+  amrex::Real* p = nullptr;
+  amrex::Real* q = nullptr;
+  amrex::Real* omega = nullptr;
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac;
   amrex::GpuArray<amrex::Real, NUM_SPECIES> molefrac;
   amrex::Real xchk[3] = {0.0, 0.10, 0.10};
@@ -47,8 +39,21 @@ struct ProbParmDevice
 
 struct ProbParmHost
 {
-
-  ProbParmHost() {}
+  amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> h_k;
+  amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> h_p;
+  amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> h_q;
+  amrex::Vector<amrex::Vector<amrex::Real>> h_omega;
+  amrex::Vector<amrex::Vector<amrex::Real>> h_xi;
+  amrex::Vector<amrex::Vector<amrex::Real>> h_zeta;
+  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>>> k;
+  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>>> p;
+  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>>> q;
+  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> omega;
+  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> xi;
+  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> zeta;
+  ProbParmHost() 
+  : k(), p(), q(), omega(), xi(), zeta();
+  {}
 };
 
 #endif
