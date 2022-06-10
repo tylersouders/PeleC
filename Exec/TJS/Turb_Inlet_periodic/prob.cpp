@@ -198,11 +198,11 @@ extern "C" {
     PeleC::prob_parm_host->hG_k.resize(
       PeleC::prob_parm_host->h_k.size());
     PeleC::prob_parm_host->hG_p.resize(
-      PeleC::prob_parm_host->p_k.size());
+      PeleC::prob_parm_host->h_p.size());
     PeleC::prob_parm_host->hG_q.resize(
-      PeleC::prob_parm_host->q_k.size());
+      PeleC::prob_parm_host->h_q.size());
     PeleC::prob_parm_host->hG_omega.resize(
-      PeleC::prob_parm_host->omega_k.size());
+      PeleC::prob_parm_host->h_omega.size());
     amrex::Gpu::copy(
       amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_k.begin(),
       PeleC::prob_parm_host->h_k.end(),
