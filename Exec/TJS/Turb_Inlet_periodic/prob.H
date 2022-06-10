@@ -44,32 +44,32 @@ pc_initdata(
   //  (prob_hi[1] - y) * (y - prob_lo[1]);
 
   // If flag is enabled, fill entire domain with turbulence using Huang's method
-  if (PeleC::h_prob_parm_device->init_turb_fill) {
+  // if (PeleC::h_prob_parm_device->init_turb_fill) {
 
-    // Find cartesian location based on indices and dx (computed above)
-    amrex::Real loc_factor = 2.0 * constants::PI() / 
-    (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
-    amrex::Real x_hat = (prob_lo[0] + (i + 0.5) * dx[0]) * loc_factor;
-    amrex::Real y_hat = (prob_lo[1] + (j + 0.5) * dx[1]) * loc_factor;
-    amrex::Real z_hat = (prob_lo[2] + (k + 0.5) * dx[2]) * loc_factor;
+  //   // Find cartesian location based on indices and dx (computed above)
+  //   amrex::Real loc_factor = 2.0 * constants::PI() / 
+  //   (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
+  //   amrex::Real x_hat = (prob_lo[0] + (i + 0.5) * dx[0]) * loc_factor;
+  //   amrex::Real y_hat = (prob_lo[1] + (j + 0.5) * dx[1]) * loc_factor;
+  //   amrex::Real z_hat = (prob_lo[2] + (k + 0.5) * dx[2]) * loc_factor;
 
-    for(int m = 0; m < PeleC::h_prob_parm_device->turb_num_modes; m++) {
+  //   for(int m = 0; m < PeleC::h_prob_parm_device->turb_num_modes; m++) {
 
-      for(int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
+  //     for(int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
 
-        amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat
-        + PeleC::h_prob_parm_device->k[1][n][m] * y_hat
-        + PeleC::h_prob_parm_device->k[2][n][m] * z_hat
-        + PeleC::h_prob_parm_device->omega[n][m] * 0.0; //time = 0.0 becase init
-        
-        // Compute turbulence
-        for(int i = 0; i < 3; i++){
-          turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
-          + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
-        }
-      }
-    }
-  }
+  //       amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat
+  //       + PeleC::h_prob_parm_device->k[1][n][m] * y_hat
+  //       + PeleC::h_prob_parm_device->k[2][n][m] * z_hat
+  //       + PeleC::h_prob_parm_device->omega[n][m] * 0.0; //time = 0.0 becase init
+
+  //       // Compute turbulence
+  //       for(int i = 0; i < 3; i++){
+  //         turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
+  //         + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
+  //       }
+  //     }
+  //   }
+  // }
 
   // Set the state
   state(i, j, k, URHO) = PeleC::h_prob_parm_device->rho_in;
@@ -152,15 +152,26 @@ bcnormal(
 
           for(int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
 
-            amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat[0]
-            + PeleC::h_prob_parm_device->k[1][n][m] * x_hat[1]
-            + PeleC::h_prob_parm_device->k[2][n][m] * x_hat[2]
-            + PeleC::h_prob_parm_device->omega[n][m] * time;
+            // amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat[0]
+            // + PeleC::h_prob_parm_device->k[1][n][m] * x_hat[1]
+            // + PeleC::h_prob_parm_device->k[2][n][m] * x_hat[2]
+            // + PeleC::h_prob_parm_device->omega[n][m] * time;
+
+            amrex::Real arg = PeleC::h_prob_parm_device->k[0*(M*N) + m*N + n] * x_hat[0]
+            + PeleC::h_prob_parm_device->k[1*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number) 
+              + m*PeleC::h_prob_parm_device->sampling_number + n] * x_hat[1]
+            + PeleC::h_prob_parm_device->k[2*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number) 
+              + m*PeleC::h_prob_parm_device->sampling_number + n] * x_hat[2]
+            + PeleC::h_prob_parm_device->omega[PeleC::h_prob_parm_device->turb_num_modes
+              * PeleC::h_prob_parm_device->sampling_number + n] * time;
 
             // Compute turbulence perturbation
             for(int i = 0; i < 3; i++){
-              turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
-              + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
+              // turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
+              // + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
+
+              turb_u[i] += PeleC::h_prob_parm_device->p[i*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number)
+                + m*PeleC::h_prob_parm_device->sampling_number + n];
             }
           }
         }
@@ -180,7 +191,7 @@ bcnormal(
         u = PeleC::h_prob_parm_device->u_in;
         v = 0.0;
         w = 0.0;
-	rho = rho0;
+        rho = rho0;
 
       }
 
