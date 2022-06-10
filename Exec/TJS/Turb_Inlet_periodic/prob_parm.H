@@ -39,20 +39,16 @@ struct ProbParmDevice
 
 struct ProbParmHost
 {
-  amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> h_k;
-  amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> h_p;
-  amrex::Vector<amrex::Vector<amrex::Vector<amrex::Real>>> h_q;
-  amrex::Vector<amrex::Vector<amrex::Real>> h_omega;
-  amrex::Vector<amrex::Vector<amrex::Real>> h_xi;
-  amrex::Vector<amrex::Vector<amrex::Real>> h_zeta;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>>> k;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>>> p;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>>> q;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> omega;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> xi;
-  amrex::Gpu::DeviceVector<amrex::Gpu::DeviceVector<amrex::Real>> zeta;
+  amrex::Vector<amrex::Real> h_k;
+  amrex::Vector<amrex::Real> h_p;
+  amrex::Vector<amrex::Real> h_q;
+  amrex::Vector<amrex::Real> h_omega;
+  amrex::Gpu::DeviceVector<amrex::Real> hG_k;
+  amrex::Gpu::DeviceVector<amrex::Real> hG_p;
+  amrex::Gpu::DeviceVector<amrex::Real> hG_q;
+  amrex::Gpu::DeviceVector<amrex::Real> hG_omega;
   ProbParmHost() 
-  : k(0), p(0), q(0), omega(0), xi(0), zeta(0)
+  : hG_k(0), hG_p(0), hG_q(0), hG_omega(0)
   {
   }
 };
