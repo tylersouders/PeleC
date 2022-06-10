@@ -157,7 +157,8 @@ bcnormal(
             // + PeleC::h_prob_parm_device->k[2][n][m] * x_hat[2]
             // + PeleC::h_prob_parm_device->omega[n][m] * time;
 
-            amrex::Real arg = PeleC::h_prob_parm_device->k[0*(M*N) + m*N + n] * x_hat[0]
+            amrex::Real arg = PeleC::h_prob_parm_device->k[0*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number)
+            + m*PeleC::h_prob_parm_device->sampling_number + n] * x_hat[0]
             + PeleC::h_prob_parm_device->k[1*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number) 
               + m*PeleC::h_prob_parm_device->sampling_number + n] * x_hat[1]
             + PeleC::h_prob_parm_device->k[2*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number) 
