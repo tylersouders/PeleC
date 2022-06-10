@@ -172,7 +172,9 @@ bcnormal(
               // + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
 
               turb_u[i] += PeleC::h_prob_parm_device->p[i*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number)
-                + m*PeleC::h_prob_parm_device->sampling_number + n];
+                + m*PeleC::h_prob_parm_device->sampling_number + n]. * cos(arg)
+              + PeleC::h_prob_parm_device->q[i*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number)
+                + m*PeleC::h_prob_parm_device->sampling_number + n]. * sin(arg);
             }
           }
         }
