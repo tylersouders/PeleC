@@ -128,7 +128,7 @@ extern "C" {
 
           for (int i = 0; i < 3; i++) {
             // PeleC::prob_parm_host->h_p[i][n][m] = (xi_cross_k[i] / cross_mag) * std::sqrt(root_arg);
-            PeleC::h_prob_parm_device->h_p.push_back((xi_cross_k[i] / cross_mag) * std::sqrt(root_arg));
+            PeleC::prob_parm_host->h_p.push_back((xi_cross_k[i] / cross_mag) * std::sqrt(root_arg));
           }
 
           zeta_cross_k[0] = (zeta[1][n] * temp_k[2] - temp_k[1] * zeta[2][n]);
