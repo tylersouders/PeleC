@@ -195,35 +195,35 @@ extern "C" {
     }
 
   // Get pointer to variables p, q, omega, and k and cast to device
-    PeleC::prob_parm_host->k.resize(
+    PeleC::prob_parm_host->hG_k.resize(
       PeleC::prob_parm_host->h_k.size());
-    PeleC::prob_parm_host->p.resize(
+    PeleC::prob_parm_host->hG_p.resize(
       PeleC::prob_parm_host->p_k.size());
-    PeleC::prob_parm_host->q.resize(
+    PeleC::prob_parm_host->hG_q.resize(
       PeleC::prob_parm_host->q_k.size());
-    PeleC::prob_parm_host->omega.resize(
+    PeleC::prob_parm_host->hG_omega.resize(
       PeleC::prob_parm_host->omega_k.size());
     amrex::Gpu::copy(
       amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_k.begin(),
       PeleC::prob_parm_host->h_k.end(),
-      PeleC::prob_parm_host->k.begin());
+      PeleC::prob_parm_host->hG_k.begin());
     amrex::Gpu::copy(
       amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_p.begin(),
       PeleC::prob_parm_host->h_p.end(),
-      PeleC::prob_parm_host->p.begin());
+      PeleC::prob_parm_host->hG_p.begin());
     amrex::Gpu::copy(
       amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_q.begin(),
       PeleC::prob_parm_host->h_q.end(),
-      PeleC::prob_parm_host->q.begin());
+      PeleC::prob_parm_host->hG_q.begin());
     amrex::Gpu::copy(
       amrex::Gpu::hostToDevice, PeleC::prob_parm_host->h_omega.begin(),
       PeleC::prob_parm_host->h_omega.end(),
-      PeleC::prob_parm_host->omega.begin());
+      PeleC::prob_parm_host->hG_omega.begin());
 
-    PeleC::h_prob_parm_device->k = PeleC::prob_parm_host->k.data();
-    PeleC::h_prob_parm_device->p = PeleC::prob_parm_host->p.data();
-    PeleC::h_prob_parm_device->q = PeleC::prob_parm_host->q.data();
-    PeleC::h_prob_parm_device->omega = PeleC::prob_parm_host->omega.data();
+    PeleC::h_prob_parm_device->k = PeleC::prob_parm_host->hG_k.data();
+    PeleC::h_prob_parm_device->p = PeleC::prob_parm_host->hG_p.data();
+    PeleC::h_prob_parm_device->q = PeleC::prob_parm_host->hG_q.data();
+    PeleC::h_prob_parm_device->omega = PeleC::prob_parm_host->hG_omega.data();
 
   }
 }
