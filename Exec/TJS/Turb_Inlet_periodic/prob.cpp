@@ -233,12 +233,12 @@ void
 PeleC::problem_post_timestep()
 {
  if (amrex::ParallelDescriptor::IOProcessor()) {
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " p[0]  = " << PeleC::h_prob_parm_device->p[0][5][10] << '\n';
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " q[0]  = " << PeleC::h_prob_parm_device->q[0][5][10] << '\n';
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " k[0]  = " << PeleC::h_prob_parm_device->k[0][5][10] << '\n';
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " k[1]  = " << PeleC::h_prob_parm_device->k[1][5][10] << '\n';
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " omega  = " << PeleC::h_prob_parm_device->omega[5][10] << '\n';
-   amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " divu_check = " << PeleC::h_prob_parm_device->divu_check << '\n';
+   // amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " p[0]  = " << PeleC::h_prob_parm_device->p[0][5][10] << '\n';
+   // amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " q[0]  = " << PeleC::h_prob_parm_device->q[0][5][10] << '\n';
+   // amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " k[0]  = " << PeleC::h_prob_parm_device->k[0][5][10] << '\n';
+   // amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " k[1]  = " << PeleC::h_prob_parm_device->k[1][5][10] << '\n';
+   // amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " omega  = " << PeleC::h_prob_parm_device->omega[5][10] << '\n';
+   // amrex::Print() << "TIME= " << PeleC::h_prob_parm_device->timechk << " divu_check = " << PeleC::h_prob_parm_device->divu_check << '\n';
  }
 }
 
