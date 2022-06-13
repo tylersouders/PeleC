@@ -117,7 +117,7 @@ bcnormal(
       // amrex::Print() << "starting bcnormal. x = " << x[0] << " " << x[1] << " " << x[2] << " " << '\n';
 
       // Save the time for debug
-      prob_parm.timechk = time;
+      // prob_parm.timechk = time;
 
       const amrex::Real* prob_lo = geomdata.ProbLo();
       const amrex::Real* prob_hi = geomdata.ProbHi();
