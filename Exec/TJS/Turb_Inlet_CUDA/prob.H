@@ -78,13 +78,13 @@ pc_initdata(
     state(i, j, k, UMY) = turb_u[1] * prob_parm.rho_in;
     state(i, j, k, UMZ) = turb_u[2] * prob_parm.rho_in;
   } else {
-    state(i, j, k, UMX) = u_pert * prob_parm.rho_in;
+    state(i, j, k, UMX) = prob_parm.u_in * prob_parm.rho_in;
     state(i, j, k, UMY) = 0.0;
     state(i, j, k, UMZ) = 0.0;
   }
   state(i, j, k, UEINT) = prob_parm.rho_in * prob_parm.e_in;
   state(i, j, k, UEDEN) = prob_parm.rho_in * 
-  (prob_parm.e_in + 0.5 * (u_pert * u_pert));
+  (prob_parm.e_in + 0.5 * (prob_parm.u_in * prob_parm.u_in));
   state(i, j, k, UTEMP) = prob_parm.T_in;
   for (int n = 0; n < NUM_SPECIES; n++)
     state(i, j, k, UFS + n) = prob_parm.rho_in * prob_parm.massfrac[n];
