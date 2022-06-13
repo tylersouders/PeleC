@@ -32,8 +32,8 @@ pc_initdata(
 {
   // Get random val for initial x-momentum.
   // Consider changing seed to be non-deterministic
-  amrex::Real pert = 1.0 + ((amrex::Random() - 0.5) * PeleC::h_prob_parm_device->init_pert_mag);
-  amrex::Real u_pert = PeleC::h_prob_parm_device->u_in * pert;
+  amrex::Real pert = 1.0 + ((amrex::Random() - 0.5) * prob_parm.init_pert_mag);
+  amrex::Real u_pert = prob_parm.u_in * pert;
   amrex::Real turb_u[AMREX_SPACEDIM] = {0.0};
 
   const amrex::Real* prob_lo = geomdata.ProbLo();
@@ -44,50 +44,50 @@ pc_initdata(
   //  (prob_hi[1] - y) * (y - prob_lo[1]);
 
   // If flag is enabled, fill entire domain with turbulence using Huang's method
-  // if (PeleC::h_prob_parm_device->init_turb_fill) {
+  // if (prob_parm.init_turb_fill) {
 
   //   // Find cartesian location based on indices and dx (computed above)
   //   amrex::Real loc_factor = 2.0 * constants::PI() / 
-  //   (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
+  //   (prob_parm.Ls_prefactor * prob_parm.turb_length_scale);
   //   amrex::Real x_hat = (prob_lo[0] + (i + 0.5) * dx[0]) * loc_factor;
   //   amrex::Real y_hat = (prob_lo[1] + (j + 0.5) * dx[1]) * loc_factor;
   //   amrex::Real z_hat = (prob_lo[2] + (k + 0.5) * dx[2]) * loc_factor;
 
-  //   for(int m = 0; m < PeleC::h_prob_parm_device->turb_num_modes; m++) {
+  //   for(int m = 0; m < prob_parm.turb_num_modes; m++) {
 
-  //     for(int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
+  //     for(int n = 0; n < prob_parm.sampling_number; n++) {
 
-  //       amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat
-  //       + PeleC::h_prob_parm_device->k[1][n][m] * y_hat
-  //       + PeleC::h_prob_parm_device->k[2][n][m] * z_hat
-  //       + PeleC::h_prob_parm_device->omega[n][m] * 0.0; //time = 0.0 becase init
+  //       amrex::Real arg = prob_parm.k[0][n][m] * x_hat
+  //       + prob_parm.k[1][n][m] * y_hat
+  //       + prob_parm.k[2][n][m] * z_hat
+  //       + prob_parm.omega[n][m] * 0.0; //time = 0.0 becase init
 
   //       // Compute turbulence
   //       for(int i = 0; i < 3; i++){
-  //         turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
-  //         + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
+  //         turb_u[i] += prob_parm.p[i][n][m] * cos(arg)
+  //         + prob_parm.q[i][n][m] * sin(arg);
   //       }
   //     }
   //   }
   // }
 
   // Set the state
-  state(i, j, k, URHO) = PeleC::h_prob_parm_device->rho_in;
-  if (PeleC::h_prob_parm_device->init_turb_fill) {
-    state(i, j, k, UMX) = turb_u[0] * PeleC::h_prob_parm_device->rho_in;
-    state(i, j, k, UMY) = turb_u[1] * PeleC::h_prob_parm_device->rho_in;
-    state(i, j, k, UMZ) = turb_u[2] * PeleC::h_prob_parm_device->rho_in;
+  state(i, j, k, URHO) = prob_parm.rho_in;
+  if (prob_parm.init_turb_fill) {
+    state(i, j, k, UMX) = turb_u[0] * prob_parm.rho_in;
+    state(i, j, k, UMY) = turb_u[1] * prob_parm.rho_in;
+    state(i, j, k, UMZ) = turb_u[2] * prob_parm.rho_in;
   } else {
-    state(i, j, k, UMX) = u_pert * PeleC::h_prob_parm_device->rho_in;
+    state(i, j, k, UMX) = u_pert * prob_parm.rho_in;
     state(i, j, k, UMY) = 0.0;
     state(i, j, k, UMZ) = 0.0;
   }
-  state(i, j, k, UEINT) = PeleC::h_prob_parm_device->rho_in * PeleC::h_prob_parm_device->e_in;
-  state(i, j, k, UEDEN) = PeleC::h_prob_parm_device->rho_in * 
-  (PeleC::h_prob_parm_device->e_in + 0.5 * (u_pert * u_pert));
-  state(i, j, k, UTEMP) = PeleC::h_prob_parm_device->T_in;
+  state(i, j, k, UEINT) = prob_parm.rho_in * prob_parm.e_in;
+  state(i, j, k, UEDEN) = prob_parm.rho_in * 
+  (prob_parm.e_in + 0.5 * (u_pert * u_pert));
+  state(i, j, k, UTEMP) = prob_parm.T_in;
   for (int n = 0; n < NUM_SPECIES; n++)
-    state(i, j, k, UFS + n) = PeleC::h_prob_parm_device->rho_in * PeleC::h_prob_parm_device->massfrac[n];
+    state(i, j, k, UFS + n) = prob_parm.rho_in * prob_parm.massfrac[n];
 }
 
 AMREX_GPU_DEVICE
@@ -117,17 +117,17 @@ bcnormal(
       // amrex::Print() << "starting bcnormal. x = " << x[0] << " " << x[1] << " " << x[2] << " " << '\n';
 
       // Save the time for debug
-      PeleC::h_prob_parm_device->timechk = time;
+      prob_parm.timechk = time;
 
       const amrex::Real* prob_lo = geomdata.ProbLo();
       const amrex::Real* prob_hi = geomdata.ProbHi();
       const amrex::Real z_len = prob_hi[2] - prob_lo[2];
-      const amrex::Real rho0 = PeleC::h_prob_parm_device->rho_in;
+      const amrex::Real rho0 = prob_parm.rho_in;
 
       // const bool periodic_locationcheck = (x[2] >= 0.03 * z_len && x[2] <= 0.97 * z_len);
 
-      // if(PeleC::h_prob_parm_device->do_turb_inlet && periodic_locationcheck) {
-      if(PeleC::h_prob_parm_device->do_turb_inlet) {
+      // if(prob_parm.do_turb_inlet && periodic_locationcheck) {
+      if(prob_parm.do_turb_inlet) {
 
         // Compute turbulence inflow as described in Huang, 2010 Generalized turbulent inflow
 
@@ -137,72 +137,72 @@ bcnormal(
 
         // Normalize position values
         amrex::Real loc_factor = 2.0 * constants::PI() / 
-        (PeleC::h_prob_parm_device->Ls_prefactor * PeleC::h_prob_parm_device->turb_length_scale);
+        (prob_parm.Ls_prefactor * prob_parm.turb_length_scale);
         for(int i = 0; i < AMREX_SPACEDIM; i++) {
           x_hat[i] = x[i] * loc_factor;
         }
 
         // Correct for velocity at inflow, assuming inflow is approximately 
         // purely x-dimensional (u >> v, w)
-        // x_hat[0] -= (PeleC::h_prob_parm_device->u_in * time) * loc_factor;
+        // x_hat[0] -= (prob_parm.u_in * time) * loc_factor;
 
         //amrex::Print() << "bcnormal check #1 (before loop) " << '\n';
 
-        for(int m = 0; m < PeleC::h_prob_parm_device->turb_num_modes; m++) {
+        for(int m = 0; m < prob_parm.turb_num_modes; m++) {
 
-          for(int n = 0; n < PeleC::h_prob_parm_device->sampling_number; n++) {
+          for(int n = 0; n < prob_parm.sampling_number; n++) {
 
-            // amrex::Real arg = PeleC::h_prob_parm_device->k[0][n][m] * x_hat[0]
-            // + PeleC::h_prob_parm_device->k[1][n][m] * x_hat[1]
-            // + PeleC::h_prob_parm_device->k[2][n][m] * x_hat[2]
-            // + PeleC::h_prob_parm_device->omega[n][m] * time;
+            // amrex::Real arg = prob_parm.k[0][n][m] * x_hat[0]
+            // + prob_parm.k[1][n][m] * x_hat[1]
+            // + prob_parm.k[2][n][m] * x_hat[2]
+            // + prob_parm.omega[n][m] * time;
 
-            amrex::Real arg = PeleC::h_prob_parm_device->k[0*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number)
-            + m*PeleC::h_prob_parm_device->sampling_number + n] * x_hat[0]
-            + PeleC::h_prob_parm_device->k[1*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number) 
-              + m*PeleC::h_prob_parm_device->sampling_number + n] * x_hat[1]
-            + PeleC::h_prob_parm_device->k[2*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number) 
-              + m*PeleC::h_prob_parm_device->sampling_number + n] * x_hat[2]
-            + PeleC::h_prob_parm_device->omega[PeleC::h_prob_parm_device->turb_num_modes
-              * PeleC::h_prob_parm_device->sampling_number + n] * time;
+            amrex::Real arg = prob_parm.k[0*(prob_parm.turb_num_modes*prob_parm.sampling_number)
+            + m*prob_parm.sampling_number + n] * x_hat[0]
+            + prob_parm.k[1*(prob_parm.turb_num_modes*prob_parm.sampling_number) 
+              + m*prob_parm.sampling_number + n] * x_hat[1]
+            + prob_parm.k[2*(prob_parm.turb_num_modes*prob_parm.sampling_number) 
+              + m*prob_parm.sampling_number + n] * x_hat[2]
+            + prob_parm.omega[prob_parm.turb_num_modes
+              * prob_parm.sampling_number + n] * time;
 
             // Compute turbulence perturbation
             for(int i = 0; i < 3; i++){
-              // turb_u[i] += PeleC::h_prob_parm_device->p[i][n][m] * cos(arg)
-              // + PeleC::h_prob_parm_device->q[i][n][m] * sin(arg);
+              // turb_u[i] += prob_parm.p[i][n][m] * cos(arg)
+              // + prob_parm.q[i][n][m] * sin(arg);
 
-              turb_u[i] += PeleC::h_prob_parm_device->p[i*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number)
-                + m*PeleC::h_prob_parm_device->sampling_number + n] * cos(arg)
-              + PeleC::h_prob_parm_device->q[i*(PeleC::h_prob_parm_device->turb_num_modes*PeleC::h_prob_parm_device->sampling_number)
-                + m*PeleC::h_prob_parm_device->sampling_number + n] * sin(arg);
+              turb_u[i] += prob_parm.p[i*(prob_parm.turb_num_modes*prob_parm.sampling_number)
+                + m*prob_parm.sampling_number + n] * cos(arg)
+              + prob_parm.q[i*(prob_parm.turb_num_modes*prob_parm.sampling_number)
+                + m*prob_parm.sampling_number + n] * sin(arg);
             }
           }
         }
 
-        u = turb_u[0]+PeleC::h_prob_parm_device->u_in;
+        u = turb_u[0]+prob_parm.u_in;
         v = turb_u[1];
         w = turb_u[2];
 
         // Compute adjustment for rho to account for velocity increase
-        //amrex::Real temp_ratio = PeleC::h_prob_parm_device->u_in / std::sqrt(
+        //amrex::Real temp_ratio = prob_parm.u_in / std::sqrt(
         //  std::pow(u, 2.0) + std::pow(v, 2.0) + std::pow(w, 2.0));
         //rho = rho0 * std::pow(temp_ratio, 2.0);
         rho = rho0;
 
       } else {
 
-        u = PeleC::h_prob_parm_device->u_in;
+        u = prob_parm.u_in;
         v = 0.0;
         w = 0.0;
         rho = rho0;
 
       }
 
-      eint =  PeleC::h_prob_parm_device->e_in;
-      T = PeleC::h_prob_parm_device->T_in;
+      eint =  prob_parm.e_in;
+      T = prob_parm.T_in;
       for (int n = 0; n < NUM_SPECIES; n++)
-        s_ext[UFS + n] = PeleC::h_prob_parm_device->rho_in * PeleC::h_prob_parm_device->massfrac[n];
-        //s_ext[UFS + n] = rho * PeleC::h_prob_parm_device->massfrac[n];
+        s_ext[UFS + n] = prob_parm.rho_in * prob_parm.massfrac[n];
+        //s_ext[UFS + n] = rho * prob_parm.massfrac[n];
       // amrex::Print() << "bcnormal check #3 (finished) " << '\n';
 
     } else if (sgn == -1) {
@@ -230,7 +230,7 @@ bcnormal(
 
       // Boundary state (point b)
       const amrex::Real xb = prob_hi[0];
-      const amrex::Real pb = PeleC::h_prob_parm_device->p_in;
+      const amrex::Real pb = prob_parm.p_in;
       const amrex::Real rhob = s_int[URHO] + (pb - p_int) / (cs_int * cs_int);
       const amrex::Real ub = u_int + (p_int - pb) / (rho_int * cs_int);
       const amrex::Real vb = v_int;
