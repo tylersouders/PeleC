@@ -32,8 +32,8 @@ pc_initdata(
 {
   // Get random val for initial x-momentum.
   // Consider changing seed to be non-deterministic
-  amrex::Real pert = 1.0 + ((amrex::Random() - 0.5) * prob_parm.init_pert_mag);
-  amrex::Real u_pert = prob_parm.u_in * pert;
+  // amrex::Real pert = 1.0 + ((amrex::Random() - 0.5) * prob_parm.init_pert_mag);
+  // amrex::Real u_pert = prob_parm.u_in * pert;
   amrex::Real turb_u[AMREX_SPACEDIM] = {0.0};
 
   const amrex::Real* prob_lo = geomdata.ProbLo();
