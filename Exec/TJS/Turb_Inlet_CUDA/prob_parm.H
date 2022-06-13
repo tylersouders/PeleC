@@ -4,6 +4,7 @@
 #include <AMReX_REAL.H>
 #include <AMReX_GpuQualifiers.H>
 #include <AMReX_GpuMemory.H>
+#include <AMReX_Vector.H>
 
 struct ProbParmDevice
 {
@@ -21,14 +22,12 @@ struct ProbParmDevice
   amrex::Real turb_length_scale = 0.002;
   amrex::Real turb_intensity = 7;
   amrex::Real Ls_prefactor = 1.5;
-  static const int turb_num_modes = 100;
+  int turb_num_modes = 100;
   static const int sampling_number = 100;
-  amrex::GpuArray<amrex::Array<amrex::Array<amrex::Real, turb_num_modes>, sampling_number>, 3> k;
-  amrex::GpuArray<amrex::Array<amrex::Array<amrex::Real, turb_num_modes>, sampling_number>, 3> p;
-  amrex::GpuArray<amrex::Array<amrex::Array<amrex::Real, turb_num_modes>, sampling_number>, 3> q;
-  amrex::GpuArray<amrex::Array<amrex::Real, turb_num_modes>, sampling_number> omega;
-  amrex::GpuArray<amrex::Array<amrex::Real, sampling_number>, 3> xi;
-  amrex::GpuArray<amrex::Array<amrex::Real, sampling_number>, 3> zeta;
+  amrex::Real* k = nullptr;
+  amrex::Real* p = nullptr;
+  amrex::Real* q = nullptr;
+  amrex::Real* omega = nullptr;
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac;
   amrex::GpuArray<amrex::Real, NUM_SPECIES> molefrac;
   amrex::Real xchk[3] = {0.0, 0.10, 0.10};
@@ -40,7 +39,18 @@ struct ProbParmDevice
 
 struct ProbParmHost
 {
-  ProbParmHost() {}
+  amrex::Vector<amrex::Real> h_k;
+  amrex::Vector<amrex::Real> h_p;
+  amrex::Vector<amrex::Real> h_q;
+  amrex::Vector<amrex::Real> h_omega;
+  amrex::Gpu::DeviceVector<amrex::Real> hG_k;
+  amrex::Gpu::DeviceVector<amrex::Real> hG_p;
+  amrex::Gpu::DeviceVector<amrex::Real> hG_q;
+  amrex::Gpu::DeviceVector<amrex::Real> hG_omega;
+  ProbParmHost() 
+  : hG_k(0), hG_p(0), hG_q(0), hG_omega(0)
+  {
+  }
 };
 
 #endif
