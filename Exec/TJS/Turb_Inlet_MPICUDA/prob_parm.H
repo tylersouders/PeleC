@@ -20,7 +20,7 @@ struct ProbParmDevice
   amrex::Real u_in = 1590.0;
   amrex::Real init_pert_mag = 0.02;
   amrex::Real turb_length_scale = 0.002;
-  amrex::Real turb_intensity = 7;
+  amrex::Real turb_intensity = 18;
   amrex::Real Ls_prefactor = 1.5;
   int turb_num_modes = 100;
   static const int sampling_number = 100;

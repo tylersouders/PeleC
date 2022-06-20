@@ -135,6 +135,10 @@ bcnormal(
         amrex::Real x_hat[AMREX_SPACEDIM]  = {0.0};
         amrex::Real turb_u[AMREX_SPACEDIM] = {0.0};
 
+        // Makes indexing easier in the double-loop
+        int M = prob_parm.turb_num_modes;
+        int N = prob_parm.sampling_number
+
         // Normalize position values
         amrex::Real loc_factor = 2.0 * constants::PI() / 
         (prob_parm.Ls_prefactor * prob_parm.turb_length_scale);
@@ -152,29 +156,16 @@ bcnormal(
 
           for(int n = 0; n < prob_parm.sampling_number; n++) {
 
-            // amrex::Real arg = prob_parm.k[0][n][m] * x_hat[0]
-            // + prob_parm.k[1][n][m] * x_hat[1]
-            // + prob_parm.k[2][n][m] * x_hat[2]
-            // + prob_parm.omega[n][m] * time;
-
-            amrex::Real arg = prob_parm.k[0*(prob_parm.turb_num_modes*prob_parm.sampling_number)
-            + m*prob_parm.sampling_number + n] * x_hat[0]
-            + prob_parm.k[1*(prob_parm.turb_num_modes*prob_parm.sampling_number) 
-              + m*prob_parm.sampling_number + n] * x_hat[1]
-            + prob_parm.k[2*(prob_parm.turb_num_modes*prob_parm.sampling_number) 
-              + m*prob_parm.sampling_number + n] * x_hat[2]
-            + prob_parm.omega[prob_parm.turb_num_modes
-              * prob_parm.sampling_number + n] * time;
+            amrex::Real arg = prob_parm.k[0 + 3*n + m*(3*N)] * x_hat[0]
+                            + prob_parm.k[0 + 3*n + m*(3*N)] * x_hat[1]
+                            + prob_parm.k[0 + 3*n + m*(3*N)] * x_hat[2]
+                            + prob_parm.omega[n + m*N] * time;
 
             // Compute turbulence perturbation
-            for(int i = 0; i < 3; i++){
-              // turb_u[i] += prob_parm.p[i][n][m] * cos(arg)
-              // + prob_parm.q[i][n][m] * sin(arg);
+            for (int i = 0; i < 3; i++){
 
-              turb_u[i] += prob_parm.p[i*(prob_parm.turb_num_modes*prob_parm.sampling_number)
-                + m*prob_parm.sampling_number + n] * cos(arg)
-              + prob_parm.q[i*(prob_parm.turb_num_modes*prob_parm.sampling_number)
-                + m*prob_parm.sampling_number + n] * sin(arg);
+              turb_u[i] += prob_parm.p[i + n*3 + m*(3*N)] * cos(arg)
+                        + prob_parm.q[i + n*3 + m*(3*N)] * sin(arg);
             }
           }
         }

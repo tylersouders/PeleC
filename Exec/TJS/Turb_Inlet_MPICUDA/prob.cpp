@@ -39,25 +39,25 @@ extern "C" {
 
   // Compute turbulence length scale based on inlet domain size. Assume x-dimension is much larger than y or z.
   // Currently computing as 1/4th of the domain size, can change if necessary
-    PeleC::h_prob_parm_device->turb_length_scale = (probhi[2] - problo[2]);
+    PeleC::h_prob_parm_device->turb_length_scale = 0.25 * (probhi[2] - problo[2]);
 
   // Compute base (no AMR) grid density
-    const amrex::Real dx_base = (probhi[1] - problo[1]) / n_cells[1];
+    const amrex::Real dx_base = (probhi[2] - problo[2]) / n_cells[2];
 
   // Compute wavenumber limits (k_lo = largest length scale, k_hi = smallest)
-    const amrex::Real k_lo = 2.0 * constants::PI() / PeleC::h_prob_parm_device->turb_length_scale;
+    const amrex::Real k_lo = 2.0 * constants::PI() / (probhi[2] - problo[2]);
 
   // Adjust for periodic z-dir
     amrex::Real Nzmax, intpart, fracpart;
 
   // Compute max z wavenumber
-    const amrex::Real kz_max = 1.0 / (2.0 * dx_base);
-    Nzmax = kz_max / (2.0 * constants::PI() / PeleC::h_prob_parm_device->turb_length_scale);
+    const amrex::Real kz_max = constants::PI() / (dx_base);
+    Nzmax = kz_max / (2.0 * constants::PI() / (probhi[2] - problo[2]));
     fracpart = std::modf(Nzmax, &intpart);
     PeleC::h_prob_parm_device->turb_num_modes = intpart - 1; // Offset to account for 1 index in paper
 
   // Compute dk based on a discretization of M different discrete wavenumbers
-    const amrex::Real dk = 2.0 * constants::PI() / PeleC::h_prob_parm_device->turb_length_scale;
+    const amrex::Real dk = 2.0 * constants::PI() / (probhi[2] - problo[2]);
 
     if (amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "Checkpoint #1 (before loop) " << '\n';
