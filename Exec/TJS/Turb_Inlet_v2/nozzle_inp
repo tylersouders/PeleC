@@ -1,0 +1,195 @@
+
+# GEOMETRIC NOTES
+# H = 0.016 m
+# NOZZLE L = 16.9mm, DIFF L = 19mm
+# Turb gen is 64mm before LE of bluff body
+# Don't know overall length, goes to at least x/H = 15 = 0.24m
+# Test section 45x127 mm^2
+
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 5000000
+stop_time = 60.000600
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic =  0   0  1
+geometry.coord_sys   =  0       # 0 => cart
+
+# 3D case from symp
+# geometry.prob_lo     =  -2.0  -0.8  -0.4
+# geometry.prob_hi     =   4.8   0.8   0.4
+# amr.n_cell           =   408   96    48      
+# amr.n_cell           =   816   192    96
+
+# Suuuuper low AR
+geometry.prob_lo     =  -2.0  -0.8  -0.06666666666666666666666666
+geometry.prob_hi     =   4.8   0.8   0.06666666666666666666666666
+amr.n_cell           =   408   96    8      
+# amr.n_cell           =   816   192    8
+
+# FOR THE AHMED CASES, REFERENCE
+#geometry.prob_lo    = -12.8  -3.375 -1.6875
+#geometry.prob_hi    =  23.20  3.375 1.6875
+#amr.n_cell          =  512    96    48
+
+# Bluff Body is H = 1.6cm for reference length, so this width is slightly above
+# AR = 2
+
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+# Interior, UserBC, Symmetry, SlipWall, NoSlipWall
+# >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
+
+pelec.lo_bc       =  "Hard"   "NoSlipWall" "Interior"
+pelec.hi_bc       =  "Hard"   "NoSlipWall" "Interior"
+
+# Problem setup
+pelec.eb_boundary_T = 1600.0
+pelec.eb_isothermal = 0
+
+# WHICH PHYSICS
+pelec.do_hydro = 1
+pelec.do_mol = 1
+pelec.do_react = 0
+pelec.diffuse_temp = 1
+pelec.diffuse_vel  = 1
+pelec.diffuse_spec = 1
+pelec.diffuse_enth = 1
+#pelec.use_laxf_flux = 1 # testing - Hari says this is more diffusive. Might help? Edit: breaks instantly on restart
+
+pelec.flame_trac_name = CO
+pelec.chem_integrator = "ReactorCvode"
+
+# REACTOR SETTINGS
+cvode.solve_type = GMRES # 1=dense, 5=sparse, 99=Krylov iterative
+ode.analytical_jacobian = 0
+ode.verbose = 1
+#
+# TIME STEP CONTROL
+pelec.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+pelec.cfl            = 0.3    # cfl number for hyperbolic system
+pelec.init_shrink    = 0.1    # scale back initial timestep
+pelec.change_max     = 1.1     # maximum increase in dt over successive steps
+
+# DIAGNOSTICS & VERBOSITY
+pelec.sum_interval   = 1       # timesteps between computing mass
+pelec.v              = 1       # verbosity in PeleC cpp files
+amr.v                = 1       # verbosity in Amr.cpp
+#amr.grid_log         = grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 1       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 2       # how often to regrid
+amr.n_error_buf     = 6 2 2 2
+amr.blocking_factor = 8 8 8 16    # block factor in grid generation
+amr.max_grid_size   = 64 
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 1
+amr.check_file      = chk      # root name of checkpoint file
+amr.check_int       = 100       # number of timesteps between checkpoints
+
+# PLOTFILES
+amr.plot_files_output = 1
+amr.plot_file       = plt
+#amr.plot_int        = 250
+#amr.plot_per        = 6.25e-5
+# amr.plot_per        = 3.125e-5
+amr.plot_per        = 1.5625e-5
+amr.derive_plot_vars = density xmom ymom zmom Temp pressure kineng magvort divu x_velocity y_velocity z_velocity heatRelease viscosity conductivity
+
+# TAGGING
+tagging.vorterr = 1.2e4
+tagging.max_vorterr_lev = 2
+
+tagging.vfracerr = 3
+tagging.max_vfracerr_lev = 2
+
+tagging.max_ftracerr_lev = 2
+tagging.ftracerr = 1.4e-2
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# GEOMETRY
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#geometry.prob_lo     =  -2.0  -0.8  -0.4
+#geometry.prob_hi     =   4.8   0.8   0.4
+#amr.n_cell           =   408   96    48
+
+eb2.geom_type = "tailored_bb"
+tailored_bb.num_tri = 3
+
+# boxes
+tailored_bb.top_box_lo = -6.0   0.601 0
+tailored_bb.top_box_hi = 6.001  0.801 0
+tailored_bb.bot_box_lo = -6.0  -0.801 0
+tailored_bb.bot_box_hi = 6.001 -0.601 0
+
+# SHRW: ramps shifted outside of domain for nominal case. 2 added to all y-values.
+
+# top ramp
+tailored_bb.tri_0_point_0 = -0.34524 0.6011 0
+tailored_bb.tri_0_point_2 =  4.801   0.6011 0
+tailored_bb.tri_0_point_1 =  4.801   0.4515 0
+
+# bottom ramp
+tailored_bb.tri_1_point_0 = -0.34524 -.6011 0
+tailored_bb.tri_1_point_1 =  4.801   -.6011 0
+tailored_bb.tri_1_point_2 =  4.801   -.4515 0
+
+# bluff body triangular prism
+# Current dims (0.674cm side length) correspond to a 1/3 blockage ratio
+# Switching to 0.4cm side length though to keep AR=2
+tailored_bb.tri_2_point_0 = -0.34524  0.0    0.0
+tailored_bb.tri_2_point_1 =  0.001   -0.1999 0.0
+tailored_bb.tri_2_point_2 =  0.001    0.1999 0.0
+
+ebd.boundary_grad_stencil_type = 0
+
+# Input C_nH_m
+#prob.rxn_c_m = 3
+#prob.rxn_c_n = 8
+prob.p_input = 1013250.0 		#[Ba]
+prob.T_input = 300	   		#[K]
+prob.rho_input = 0.00116 		#[g/cm^3]
+prob.u_input =  1200.0	        #[cm/s]
+prob.v_input =  0.0		#[cm/s]
+prob.phi_input = 0.65
+prob.init_pert_mag = 0.02
+prob.fuel_y_limit = 10.45
+prob.fuel_x_limit = 1.75 # unique to the nozzle case of the three.
+
+# Turbulence Settings
+prob.init_turb_fill = 0
+prob.do_turb_inlet = 1
+
+# SHRW: Set to large vals initially.
+#custom_tag.max_x = 50.0
+#custom_tag.min_x = -50.0
+#custom_tag.max_y = 10.8
+#custom_tag.min_y = -10.8
+#custom_tag.first_lim_level = 3
+
+custom_tag.max_x = 2.2
+custom_tag.min_x = -10.4
+custom_tag.max_y = 0.4
+custom_tag.min_y = -0.4
+custom_tag.first_lim_level = 1
+
+# Special limits for EB tags. The intent is to prevent
+# unnecessary refinement on the rear BB face, while still
+# doing 3 levels on the incoming triangle faces
+custom_tag.max_x_EB =  1.008
+custom_tag.min_x_EB = -0.4
+custom_tag.max_y_EB =  0.22
+custom_tag.min_y_EB = -0.22
+custom_tag.first_lim_level_EB = 1
+
+#fabarray.mfiter_tile_size = 1024 1024 1024
+
+# RESTART SETTINGS
+amr.restart = chk03900
+amr.regrid_on_restart = 0
+
+# LOAD BALANCING
+
+amr.loadbalance_with_workestimates = 1
