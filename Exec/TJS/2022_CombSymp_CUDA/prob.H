@@ -40,15 +40,15 @@ pc_initdata(
   //auto eos = pele::physics::PhysicsType::eos();
   //eos.X2Y(molefrac_alt.begin(), massfrac_alt.begin());
   //eos.PYT2RE(
-  //   PeleC::h_prob_parm_device->p_input, massfrac_alt.begin(),
-  //   PeleC::h_prob_parm_device->T_input, rho_alt, eint_alt);
+  //   prob_parm.p_input, massfrac_alt.begin(),
+  //   prob_parm.T_input, rho_alt, eint_alt);
 
   // Add u perturbations
-  amrex::Real perturb = (1.0 + ((((rand()%100)/99.0)-0.5)*PeleC::h_prob_parm_device->init_pert_mag));
-  amrex::Real u_perturb = PeleC::h_prob_parm_device->u_input * perturb;
+  amrex::Real perturb = (1.0 + ((((rand()%100)/99.0)-0.5)*prob_parm.init_pert_mag));
+  amrex::Real u_perturb = prob_parm.u_input * perturb;
 
   // Initial Pressure Value (is this redundant?)
-  const amrex::Real p = PeleC::h_prob_parm_device->p_input;
+  const amrex::Real p = prob_parm.p_input;
 
   // Initialize Energy from Mass composition
   //amrex::Real rho = 0.0, eint = 0.0;
@@ -63,31 +63,31 @@ pc_initdata(
   //amrex::Real eint = prob_parm.eint_input;
 
   // Initialize domain state, using fuel_y_limit
-  if (std::abs(y) < PeleC::h_prob_parm_device->fuel_y_limit && x < PeleC::h_prob_parm_device->fuel_x_limit) {
-    rho = PeleC::h_prob_parm_device->rho_input;
-    state(i, j, k, UEINT) = rho * PeleC::h_prob_parm_device->eint_input;
-    state(i, j, k, UEDEN) = rho * (PeleC::h_prob_parm_device->eint_input
-      + 0.5 * (u_perturb * u_perturb + PeleC::h_prob_parm_device->v_input * PeleC::h_prob_parm_device->v_input
-      + PeleC::h_prob_parm_device->w_input * PeleC::h_prob_parm_device->w_input));
+  if (std::abs(y) < prob_parm.fuel_y_limit && x < prob_parm.fuel_x_limit) {
+    rho = prob_parm.rho_input;
+    state(i, j, k, UEINT) = rho * prob_parm.eint_input;
+    state(i, j, k, UEDEN) = rho * (prob_parm.eint_input
+      + 0.5 * (u_perturb * u_perturb + prob_parm.v_input * prob_parm.v_input
+      + prob_parm.w_input * prob_parm.w_input));
   } else {
-    rho = PeleC::h_prob_parm_device->rho_air;
-    state(i, j, k, UEINT) = rho * PeleC::h_prob_parm_device->eint_air;
-    state(i, j, k, UEDEN) = rho * (PeleC::h_prob_parm_device->eint_air
-      + 0.5 * (u_perturb * u_perturb + PeleC::h_prob_parm_device->v_input * PeleC::h_prob_parm_device->v_input
-      + PeleC::h_prob_parm_device->w_input * PeleC::h_prob_parm_device->w_input));
+    rho = prob_parm.rho_air;
+    state(i, j, k, UEINT) = rho * prob_parm.eint_air;
+    state(i, j, k, UEDEN) = rho * (prob_parm.eint_air
+      + 0.5 * (u_perturb * u_perturb + prob_parm.v_input * prob_parm.v_input
+      + prob_parm.w_input * prob_parm.w_input));
   }
   state(i, j, k, URHO) = rho; // was this missing before???
-  state(i, j, k, UTEMP) = PeleC::h_prob_parm_device->T_input;
+  state(i, j, k, UTEMP) = prob_parm.T_input;
   state(i, j, k, UMX) = rho * u_perturb;
-  state(i, j, k, UMY) = rho * PeleC::h_prob_parm_device->v_input;
-  state(i, j, k, UMZ) = rho * PeleC::h_prob_parm_device->w_input;
-  if (std::abs(y) < PeleC::h_prob_parm_device->fuel_y_limit && x < PeleC::h_prob_parm_device->fuel_x_limit) {
+  state(i, j, k, UMY) = rho * prob_parm.v_input;
+  state(i, j, k, UMZ) = rho * prob_parm.w_input;
+  if (std::abs(y) < prob_parm.fuel_y_limit && x < prob_parm.fuel_x_limit) {
     for (int n = 0; n < NUM_SPECIES; n++) {
-      state(i, j, k, UFS + n) = PeleC::h_prob_parm_device->rho_input * PeleC::h_prob_parm_device->massfrac[n];
+      state(i, j, k, UFS + n) = prob_parm.rho_input * prob_parm.massfrac[n];
     }
   } else {
     for (int n = 0; n < NUM_SPECIES; n++) {
-      state(i, j, k, UFS+n) = PeleC::h_prob_parm_device->rho_air * PeleC::h_prob_parm_device->massfrac_air[n];
+      state(i, j, k, UFS+n) = prob_parm.rho_air * prob_parm.massfrac_air[n];
     }
   }
 }
@@ -113,23 +113,23 @@ bcnormal(
 
     if (sgn == 1) {
       const amrex::Real p = prob_parm.p_input;
-      T = PeleC::h_prob_parm_device->T_input;
-      u = PeleC::h_prob_parm_device->u_input; //cm/s
+      T = prob_parm.T_input;
+      u = prob_parm.u_input; //cm/s
       v = 0.0;    //cm/s
       w = 0.0;    //cm/s
 
       //limit propane away from walls
-      if (std::abs(x[1]) < PeleC::h_prob_parm_device->fuel_y_limit) {
-        rho = PeleC::h_prob_parm_device->rho_input;
-        eint = PeleC::h_prob_parm_device->eint_input;
+      if (std::abs(x[1]) < prob_parm.fuel_y_limit) {
+        rho = prob_parm.rho_input;
+        eint = prob_parm.eint_input;
         for (int n=0; n < NUM_SPECIES; n++) {
-          s_ext[UFS + n] = PeleC::h_prob_parm_device->rho_input * PeleC::h_prob_parm_device->massfrac[n];
+          s_ext[UFS + n] = prob_parm.rho_input * prob_parm.massfrac[n];
 	}
       } else {
-        rho = PeleC::h_prob_parm_device->rho_air;
-        eint = PeleC::h_prob_parm_device->eint_air;
+        rho = prob_parm.rho_air;
+        eint = prob_parm.eint_air;
         for (int n = 0; n < NUM_SPECIES; n++) {
-          s_ext[UFS + n] = PeleC::h_prob_parm_device->rho_air * PeleC::h_prob_parm_device->massfrac_air[n];
+          s_ext[UFS + n] = prob_parm.rho_air * prob_parm.massfrac_air[n];
 	}
       }
 
@@ -157,7 +157,7 @@ bcnormal(
 
       // Boundary state (point b)
       const amrex::Real xb = prob_hi[0];
-      const amrex::Real pb = PeleC::h_prob_parm_device->p_input;
+      const amrex::Real pb = prob_parm.p_input;
       const amrex::Real rhob =
         s_int[URHO] + (pb - p_int) / (cs_int * cs_int);
       const amrex::Real ub = u_int + (p_int - pb) / (rho_int * cs_int);
