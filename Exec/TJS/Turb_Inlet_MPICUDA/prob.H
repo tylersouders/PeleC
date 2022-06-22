@@ -137,7 +137,7 @@ bcnormal(
 
         // Makes indexing easier in the double-loop
         int M = prob_parm.turb_num_modes;
-        int N = prob_parm.sampling_number
+        int N = prob_parm.sampling_number;
 
         // Normalize position values
         amrex::Real loc_factor = 2.0 * constants::PI() / 
