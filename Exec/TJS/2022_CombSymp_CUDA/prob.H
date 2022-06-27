@@ -44,7 +44,7 @@ pc_initdata(
   //   prob_parm.T_input, rho_alt, eint_alt);
 
   // Add u perturbations
-  amrex::Real perturb = (1.0 + ((((rand()%100)/99.0)-0.5)*prob_parm.init_pert_mag));
+  amrex::Real perturb = (1.0 + ((((prob_parm.randnum * 100.0)/99.0)-0.5)*prob_parm.init_pert_mag));
   amrex::Real u_perturb = prob_parm.u_input * perturb;
 
   // Initial Pressure Value (is this redundant?)

@@ -22,7 +22,7 @@ struct ProbParmDevice
   amrex::Real fuel_y_limit  = 100.0;          //y-bounds for propane
   amrex::Real fuel_x_limit  = 100.0;          //x-max for propane initialization
   amrex::Real init_pert_mag = 0.0; // Decimal for initial perturbation percent
-
+  amrex::Real randnum = 0.0; // Random number for GPU-friendly u-pert
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac = {0.0};
   amrex::GpuArray<amrex::Real, NUM_SPECIES> molefrac = {0.0};
   amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac_air = {0.0};

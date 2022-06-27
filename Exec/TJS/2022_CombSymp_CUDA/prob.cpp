@@ -27,7 +27,10 @@ amrex_probinit(
   pp.query("init_pert_mag", PeleC::h_prob_parm_device->init_pert_mag);
   pp.query("fuel_y_limit", PeleC::h_prob_parm_device->fuel_y_limit);
   pp.query("fuel_x_limit", PeleC::h_prob_parm_device->fuel_x_limit);
-    
+  
+
+  //Compute random number for pert
+  PeleC::h_prob_parm_device->randnum = amrex::Random();    
   const amrex::Real H_n = 8.0;
   const amrex::Real C_m = 3.0;
   const amrex::Real a = C_m + H_n/4.0;
