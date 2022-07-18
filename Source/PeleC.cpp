@@ -1623,6 +1623,40 @@ PeleC::errorEst(
       const int ncp = S_derData.nComp();
       const int* bc = bcs[0].data();
 
+          // SHRW: limit tagging implementation.
+      const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
+        geom.CellSizeArray();
+      const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
+        geom.ProbLoArray();
+
+      int lim_lev = 10;
+      int lim_lev_EB = 10;
+
+      amrex::Real x_min = -1000.0;
+      amrex::Real x_max =  1000.0;
+      amrex::Real y_min = -1000.0;
+      amrex::Real y_max =  1000.0;
+
+      amrex::Real x_min_EB = -1000.0;
+      amrex::Real x_max_EB =  1000.0;
+      amrex::Real y_min_EB = -1000.0;
+      amrex::Real y_max_EB =  1000.0;
+
+      amrex::ParmParse ppct("custom_tag");
+
+      ppct.query("first_lim_level", lim_lev);
+      ppct.query("min_x", x_min);
+      ppct.query("max_x", x_max);
+      ppct.query("min_y", y_min);
+      ppct.query("max_y", y_max);
+
+      // custom EB limits for AFRL case
+      ppct.query("first_lim_level_EB", lim_lev_EB);
+      ppct.query("min_x_EB", x_min_EB);
+      ppct.query("max_x_EB", x_max_EB);
+      ppct.query("min_y_EB", y_min_EB);
+      ppct.query("max_y_EB", y_max_EB);
+
       // Tagging density
       if (level < tagging_parm->max_denerr_lev) {
         const amrex::Real captured_denerr = tagging_parm->denerr;
@@ -1721,6 +1755,19 @@ PeleC::errorEst(
       }
 
       // Tagging magnitude of vorticity
+      // S_derData.setVal<amrex::RunOn::Device>(0.0, datbox); //KS Comment Out
+      // pc_dermagvort(
+      //   tilebox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
+      //   level);
+      // if (level < tagging_parm->max_vorterr_lev) {
+      //   const amrex::Real vorterr =
+      //     tagging_parm->vorterr * std::pow(2.0, level);
+      //   amrex::ParallelFor(
+      //     tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      //       tag_abserror(i, j, k, tag_arr, S_derarr, vorterr, tagval);
+      //     });
+      // }
+      // Tagging magnitude of vorticity
       S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
       pc_dermagvort(
         tilebox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
@@ -1730,9 +1777,18 @@ PeleC::errorEst(
           tagging_parm->vorterr * std::pow(2.0, level);
         amrex::ParallelFor(
           tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            tag_abserror(i, j, k, tag_arr, S_derarr, vorterr, tagval);
+            if (level >= (lim_lev-1)) {
+              const amrex::Real x = prob_lo[0] + (i * dx[0]);
+              const amrex::Real y = prob_lo[1] + (j * dx[1]);
+              if ((x>x_min&&x<x_max)&&(y>y_min&&y<y_max)) {
+                tag_abserror(i, j, k, tag_arr, S_derarr, vorterr, tagval);
+              }
+            } else {
+              tag_abserror(i, j, k, tag_arr, S_derarr, vorterr, tagval);
+            }
           });
       }
+
 
       // Tagging temperature
       S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
@@ -1774,12 +1830,29 @@ PeleC::errorEst(
             datbox, S_derData, ncp, Sfab.nComp(), S_data[mfi], geom, time, bc,
             level, idx);
 
+          // if (level < tagging_parm->max_ftracerr_lev) { //KS Comment Out EB
+          //   const amrex::Real captured_ftracerr = tagging_parm->ftracerr;
+          //   amrex::ParallelFor(
+          //     tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+          //       tag_error(
+          //         i, j, k, tag_arr, S_derarr, captured_ftracerr, tagval);
+          //     });
+          // }
           if (level < tagging_parm->max_ftracerr_lev) {
             const amrex::Real captured_ftracerr = tagging_parm->ftracerr;
             amrex::ParallelFor(
               tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                tag_error(
-                  i, j, k, tag_arr, S_derarr, captured_ftracerr, tagval);
+                if (level >= (lim_lev-1)) {
+                  const amrex::Real x = prob_lo[0] + (i * dx[0]);
+                  const amrex::Real y = prob_lo[1] + (j * dx[1]);
+                  if ((x>x_min&&x<x_max)&&(y>y_min&&y<y_max)) {
+                    tag_error(
+                      i, j, k, tag_arr, S_derarr, captured_ftracerr, tagval);
+                  }
+                } else {
+                  tag_error(
+                    i, j, k, tag_arr, S_derarr, captured_ftracerr, tagval);
+                }
               });
           }
           if (level < tagging_parm->max_ftracgrad_lev) {
@@ -1796,24 +1869,52 @@ PeleC::errorEst(
         }
       }
 
+// #ifdef PELEC_USE_EB //KS Comment Out
+//       // Tagging volume fraction
+//       if (level < tagging_parm->max_vfracerr_lev) {
+//         amrex::ParallelFor(
+//           tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+//             tag_error_bounds(i, j, k, tag_arr, vfrac_arr, 0.0, 1.0, tagval);
+//           });
+
+//         const int local_i = mfi.LocalIndex();
+//         const auto Nebg =
+//           (!eb_in_domain) ? 0 : sv_eb_bndry_geom[local_i].size();
+//         EBBndryGeom* ebg = sv_eb_bndry_geom[local_i].data();
+//         amrex::ParallelFor(Nebg, [=] AMREX_GPU_DEVICE(int L) {
+//           const auto& iv = ebg[L].iv;
+//           if (tilebox.contains(iv)) {
+//             tag_arr(iv) = tagval;
+//           }
+//         });
+//       }
+// #endif
+
 #ifdef PELEC_USE_EB
       // Tagging volume fraction
       if (level < tagging_parm->max_vfracerr_lev) {
         amrex::ParallelFor(
           tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            tag_error_bounds(i, j, k, tag_arr, vfrac_arr, 0.0, 1.0, tagval);
+            if (level >= (lim_lev_EB-1)) {
+              const amrex::Real x = prob_lo[0] + (i * dx[0]);
+              const amrex::Real y = prob_lo[1] + (j * dx[1]);
+              if ((x>x_min_EB&&x<x_max_EB)&&(y>y_min_EB&&y<y_max_EB)) {
+                tag_error_bounds(i, j, k, tag_arr, vfrac_arr, 0.0, 1.0, tagval);
+              }
+            } else {
+              tag_error_bounds(i, j, k, tag_arr, vfrac_arr, 0.0, 1.0, tagval);
+            }
           });
 
-        const int local_i = mfi.LocalIndex();
-        const auto Nebg =
-          (!eb_in_domain) ? 0 : sv_eb_bndry_geom[local_i].size();
-        EBBndryGeom* ebg = sv_eb_bndry_geom[local_i].data();
-        amrex::ParallelFor(Nebg, [=] AMREX_GPU_DEVICE(int L) {
-          const auto& iv = ebg[L].iv;
-          if (tilebox.contains(iv)) {
-            tag_arr(iv) = tagval;
-          }
-        });
+        // const int local_i = mfi.LocalIndex();
+        // const int Nebg = (!eb_in_domain) ? 0 : sv_eb_bndry_geom[local_i].size();
+        // EBBndryGeom* ebg = sv_eb_bndry_geom[local_i].data();
+        // amrex::ParallelFor(Nebg, [=] AMREX_GPU_DEVICE(int L) {
+        //   const auto& iv = ebg[L].iv;
+        //   if (tilebox.contains(iv)) {
+        //     tag_arr(iv) = tagval;
+        //   }
+        // });
       }
 #endif
 
