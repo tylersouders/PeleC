@@ -1821,10 +1821,10 @@ PeleC::errorEst(
 
       // Problem specific tagging
       const ProbParmDevice* lprobparm = d_prob_parm_device;
-      // const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
-      //   geom.CellSizeArray();
-      // const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
-      //   geom.ProbLoArray();
+      const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
+        geom.CellSizeArray();
+      const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
+        geom.ProbLoArray();
       const auto captured_level = level;
       amrex::ParallelFor(
         tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
