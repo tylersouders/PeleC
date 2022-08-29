@@ -1828,22 +1828,15 @@ PeleC::errorEst(
       // TJS - Before loop read tagging limits
       // Set initial arbitrarily large bounds for AMR limits
       int lim_lev = 10;
-      amrex::Real x_min = -1000.0;
-      amrex::Real x_max = 1000.0;
-      amrex::Real y_min = -1000.0;
-      amrex::Real y_max = 1000.0;
+      amrex::GpuArray<amrex::Real, 4> AMRlims = {-1000.0, 1000.0, -1000.0, 1000.0};
 
       // // adjust based on runfile specifications
       amrex::ParmParse ppct("custom_AMR");
-
       ppct.query("first_lim_level", lim_lev);
-      amrex::GpuArray<amrex::Real, 4> AMRlims;
-      ppct.getarr("AMRbounds", AMRlims, 0, 4);
-      // this array should follow the format [xlo, xhi, ylo, yhi]
-      // ppct.query("x_min", x_min);
-      // ppct.query("x_max", x_max);
-      // ppct.query("y_min", y_min);
-      // ppct.query("y_max", y_max);
+      ppct.query("x_lim_lo", AMRlims[0]);
+      ppct.query("x_lim_hi", AMRlims[1]);
+      ppct.query("y_lim_lo", AMRlims[2]);
+      ppct.query("y_lim_hi", AMRlims[3]);
 
       amrex::ParallelFor(
         tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
