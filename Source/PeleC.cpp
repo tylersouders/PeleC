@@ -1853,7 +1853,7 @@ PeleC::errorEst(
         tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           set_problem_tags<ProblemTags>(
             i, j, k, tag_arr, Sfab, tagval, dx, prob_lo, time, captured_level,
-            lim_lev, *lprobparm);
+            lim_lev, AMRlims, *lprobparm);
         });
 
       // Now update the tags in the TagBox.
