@@ -1623,6 +1623,34 @@ PeleC::errorEst(
       const int ncp = S_derData.nComp();
       const int* bc = bcs[0].data();
 
+      // SHRW + TJS: Small edits to limit AMR tagging
+      const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx =
+        geom.CellSizeArray();
+      const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo =
+        geom.ProbLoArray();
+
+      // Set initial arbitrarily large bounds for AMR limits
+      int lim_lev = 10;
+      // int lim_lev_EB = 10;
+
+      amrex::Real x_min = -1000.0;
+      amrex::Real x_max = 1000.0;
+      amrex::Real y_min = -1000.0;
+      amrex::Real y_max = 1000.0;
+      // amrex::Real x_min_EB = -1000.0;
+      // amrex::Real x_max_EB = 1000.0;
+      // amrex::Real y_min_EB = -1000.0;
+      // amrex::Real y_max_EB = 1000.0;
+
+      // adjust based on runfile specifications
+      amrex::ParmParse ppct("custom_AMR");
+
+      ppct.query("first_lim_level", lim_lev);
+      ppct.query("x_min", x_min);
+      ppct.query("x_max", x_max);
+      ppct.query("y_min", y_min);
+      ppct.query("y_max", y_max);
+
       // Tagging density
       if (level < tagging_parm->max_denerr_lev) {
         const amrex::Real captured_denerr = tagging_parm->denerr;
@@ -1730,11 +1758,13 @@ PeleC::errorEst(
           tagging_parm->vorterr * std::pow(2.0, level);
         amrex::ParallelFor(
           tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+
+            const amrex::Real x = prob_lo[0] + (i * dx[0]);
+            const amrex::Real y = prob_lo[1] + (j * dx[1]);
+
             tag_abserror(i, j, k, tag_arr, S_derarr, vorterr, tagval);
           });
       }
-
-
 
       // Tagging temperature
       S_derData.setVal<amrex::RunOn::Device>(0.0, datbox);
