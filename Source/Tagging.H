@@ -132,18 +132,39 @@ struct EmptyProbTagStruct
   AMREX_GPU_DEVICE
   AMREX_FORCE_INLINE
   static void set_problem_tags(
-    const int /*i*/,
-    const int /*j*/,
-    const int /*k*/,
-    amrex::Array4<char> const& /*tag*/,
+    const int i,
+    const int j,
+    const int k,
+    amrex::Array4<char> const& tag,
     amrex::Array4<amrex::Real const> const& /*field*/,
     char /*tagval*/,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*dx*/,
-    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> /*prob_lo*/,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> dx,
+    const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM> prob_lo,
     const amrex::Real /*time*/,
-    const int /*level*/,
+    const int level,
+    const int limit_level,
+    const amrex::GpuArray<amrex::Real, 4> AMRlims,
     ProbParmDevice const& /*d_prob_parm_device*/) noexcept
   {
+
+    // Get the cartesian location
+    amrex::Real x_loc = prob_lo[0] + (i * dx[0]);
+    amrex::Real y_loc = prob_lo[1] + (j * dx[1]);
+
+    // Only remove - do not set, if outside of specified limit
+    // if you SET tags here, there is a chance that it will run
+    // down to like AMR=10, which is bad
+
+    if (level >= (limit_level-1)) {
+
+      // Check if outside of the provided bounds
+      if ((x<AMRlims[0]||x>AMRlims[1])||(y<AMRlims[2]||y>AMRlims[3])) {
+
+        // Delete the tag
+        tag(i, j, k) = amrex::TagBox::CLEAR;
+
+      }
+    }
   }
 };
 
