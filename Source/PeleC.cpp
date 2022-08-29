@@ -1730,10 +1730,6 @@ PeleC::errorEst(
           tagging_parm->vorterr * std::pow(2.0, level);
         amrex::ParallelFor(
           tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-
-            const amrex::Real x = prob_lo[0] + (i * dx[0]);
-            const amrex::Real y = prob_lo[1] + (j * dx[1]);
-
             tag_abserror(i, j, k, tag_arr, S_derarr, vorterr, tagval);
           });
       }
