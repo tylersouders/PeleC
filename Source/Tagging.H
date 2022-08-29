@@ -148,8 +148,8 @@ struct EmptyProbTagStruct
   {
 
     // Get the cartesian location
-    amrex::Real x_loc = prob_lo[0] + (i * dx[0]);
-    amrex::Real y_loc = prob_lo[1] + (j * dx[1]);
+    amrex::Real x = prob_lo[0] + (i * dx[0]);
+    amrex::Real y = prob_lo[1] + (j * dx[1]);
 
     // Only remove - do not set, if outside of specified limit
     // if you SET tags here, there is a chance that it will run
