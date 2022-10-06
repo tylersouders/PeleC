@@ -124,7 +124,7 @@ bcnormal(
 
       // Compute the Mach number at the outlet
       // Initialize massfrac array for interior
-      amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac_int = {0.0}, massfrac_ext = {0.0};
+      amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac_int = {0.0};
 
       // Get species composition at the inlet
       for (int n = 0; n < NUM_SPECIES; n++) {
@@ -142,7 +142,7 @@ bcnormal(
       // Get the interior direction to check for flow reversal
       const amrex::Real uchk = s_int[UMX] / s_int[URHO];
 
-      if ((Mach < prob_parm.outlet_mach_lim) && (uchk > 0.0001)) {
+      if ((Mach < prob_parm.outlet_mach_lim) && (uchk > 0.0)) {
 
         // Initialize some variables
         amrex::Real rho = 0.0, eint = 0.0, T = 0.0;
@@ -183,11 +183,7 @@ bcnormal(
         v = (vb - v_int) / (xb - xd) * (x[0] - xd) + v_int;
         w = (wb - w_int) / (xb - xd) * (x[0] - xd) + w_int;
 
-        // Outflow-specific
-        for (int n = 0; n < NUM_SPECIES; n++) {
-         s_ext[UFS + n] = s_int[UFS+n];
-        }
-
+        // Set state information
         s_ext[URHO] = rho;
         s_ext[UMX] = rho * u;
         s_ext[UMY] = rho * v;
@@ -195,53 +191,40 @@ bcnormal(
         s_ext[UEINT] = rho * eint;
         s_ext[UEDEN] = rho * (eint + 0.5 * (u * u + v * v + w * w));
         s_ext[UTEMP] = T;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+         s_ext[UFS + n] = s_int[UFS+n];
+        }
 
-      } else if ((Mach < prob_parm.outlet_mach_lim) && (uchk < -0.0001)) {
+      } else if ((Mach < prob_parm.outlet_mach_lim) && (uchk <= 0.0)) {
 
         // Get interior state information
         const amrex::Real u_int = s_int[UMX] / s_int[URHO];
         const amrex::Real v_int = s_int[UMY] / s_int[URHO];
         const amrex::Real w_int = s_int[UMZ] / s_int[URHO];
 
-        // Assume T_ext = T_atm and p=p_atm
-        amrex::Real rho_ext = 0.0, eint_ext = 0.0;
-
-        // Set massfrac as air
-        for (int n = 0; n < NUM_SPECIES; n++) {
-          massfrac_ext[n] = prob_parm.massfrac_atm[n];
-        }
-
-        // Use eos to compute rho and eint from outside air conditions
-        eos.PYT2RE(
-          prob_parm.p_atm, 
-          massfrac_ext.begin(), 
-          prob_parm.T_atm,
-          rho_ext, 
-          eint_ext);
-
         // Set state information
-        s_ext[URHO] = rho_ext;
-        s_ext[UMX] = rho_ext * u_int;
-        s_ext[UMY] = rho_ext * v_int;
-        s_ext[UMZ] = rho_ext * w_int;
-        s_ext[UEINT] = rho_ext * eint_ext;
-        s_ext[UEDEN] = rho_ext * (eint_ext + 0.5 * (u_int * u_int 
+        s_ext[URHO] = prob_parm.rho_atm;
+        s_ext[UMX] = prob_parm.rho_atm * u_int;
+        s_ext[UMY] = prob_parm.rho_atm * v_int;
+        s_ext[UMZ] = prob_parm.rho_atm * w_int;
+        s_ext[UEINT] = prob_parm.rho_atm * prob_parm.eint_atm;
+        s_ext[UEDEN] = prob_parm.rho_atm * (prob_parm.eint_atm + 0.5 * (u_int * u_int 
           + v_int * v_int + w_int * w_int));
         s_ext[UTEMP] = prob_parm.T_atm;
         for (int n = 0; n < NUM_SPECIES; n++) {
-          s_ext[UFS + n] = prob_parm.massfrac_atm[n];
+          s_ext[UFS + n] = prob_parm.rho_atm * prob_parm.massfrac_atm[n];
         }
+        
       } else {
+
         // Supersonic outlet - only option is to extrapolate
         for (int n = 0; n < NVAR; n++) {
           s_ext[n] = s_int[n];
         }
+
       }
-
     }
-
   }
-
 }
 
 void pc_prob_close();
