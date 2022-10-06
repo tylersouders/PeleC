@@ -109,16 +109,29 @@ bcnormal(
 
     } else if (sgn == -1) {
 
+      /*
+      There are three outlet cases to consider here:
+      (1) Interior Flow is supersonic (M >= 1.0), which requires
+          an extrapolation condition. No upstream information is
+          possible.
+      (2) Interior Flow is subsonic (M < 1.0) with positive x-dir
+          flow. Use the Blazek non-reflecting boundary condition.
+      (3) Interior Flow is subsonic (M < 1.0) and has reversed s.t.
+          u < 0.0. I am not 100% sure of the best way to handle
+          this, but my best guess is to enforce a Neumann-type 
+          boundary condition with p=p_atm at the outlet.
+      */
+
       // Compute the Mach number at the outlet
-      // Initialize massfrac array
-      amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac_int = {0.0};
+      // Initialize massfrac array for interior
+      amrex::GpuArray<amrex::Real, NUM_SPECIES> massfrac_int = {0.0}, massfrac_ext = {0.0};
 
       // Get species composition at the inlet
       for (int n = 0; n < NUM_SPECIES; n++) {
         massfrac_int[n] = s_int[UFS+n] / s_int[URHO];
       }
 
-      // Compute sound speed
+      // Compute sound speed and interior Mach number
       amrex::Real cs, Mach;
       eos.RTY2Cs(s_int[URHO], s_int[UTEMP], massfrac_int.begin(),
         cs);
@@ -126,7 +139,10 @@ bcnormal(
         s_int[UMY]*s_int[UMY] + s_int[UMZ]*s_int[UMZ], 0.5) /
         s_int[URHO] / cs;
 
-      if (Mach < prob_parm.outlet_mach_lim) {
+      // Get the interior direction to check for flow reversal
+      const amrex::Real uchk = s_int[UMX] / s_int[URHO];
+
+      if ((Mach < prob_parm.outlet_mach_lim) && (uchk > 0.0001)) {
 
         // Initialize some variables
         amrex::Real rho = 0.0, eint = 0.0, T = 0.0;
@@ -180,6 +196,41 @@ bcnormal(
         s_ext[UEDEN] = rho * (eint + 0.5 * (u * u + v * v + w * w));
         s_ext[UTEMP] = T;
 
+      } else if ((Mach < prob_parm.outlet_mach_lim) && (uchk < -0.0001)) {
+
+        // Get interior state information
+        const amrex::Real u_int = s_int[UMX] / s_int[URHO];
+        const amrex::Real v_int = s_int[UMY] / s_int[URHO];
+        const amrex::Real w_int = s_int[UMZ] / s_int[URHO];
+
+        // Assume T_ext = T_atm and p=p_atm
+        amrex::Real rho_ext = 0.0, eint_ext = 0.0;
+
+        // Set massfrac as air
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          massfrac_ext[n] = prob_parm.massfrac_atm[n];
+        }
+
+        // Use eos to compute rho and eint from outside air conditions
+        eos.PYT2RE(
+          prob_parm.p_atm, 
+          massfrac_ext.begin(), 
+          prob_parm.T_atm,
+          rho_ext, 
+          eint_ext);
+
+        // Set state information
+        s_ext[URHO] = rho_ext;
+        s_ext[UMX] = rho_ext * u_int;
+        s_ext[UMY] = rho_ext * v_int;
+        s_ext[UMZ] = rho_ext * w_int;
+        s_ext[UEINT] = rho_ext * eint_ext;
+        s_ext[UEDEN] = rho_ext * (eint_ext + 0.5 * (u_int * u_int 
+          + v_int * v_int + w_int * w_int));
+        s_ext[UTEMP] = prob_parm.T_atm;
+        for (int n = 0; n < NUM_SPECIES; n++) {
+          s_ext[UFS + n] = prob_parm.massfrac_atm[n];
+        }
       } else {
         // Supersonic outlet - only option is to extrapolate
         for (int n = 0; n < NVAR; n++) {
