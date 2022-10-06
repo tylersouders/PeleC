@@ -155,7 +155,7 @@ struct EmptyProbTagStruct
     // if you SET tags here, there is a chance that it will run
     // down to like AMR=10, which is bad
 
-    if (level >= (limit_level-1)) {
+    if (level >= (limit_level)) {
 
       // Check if outside of the provided bounds
       if ((x<AMRlims[0]||x>AMRlims[1])||(y<AMRlims[2]||y>AMRlims[3])) {
