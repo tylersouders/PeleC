@@ -57,7 +57,7 @@ extern "C" {
       rho0, eint0);
 
     // Use EB limits to compute throat area
-    amrex::ParmParse pp2("eb2");
+    amrex::ParmParse pp2("tailored_bb");
     amrex::Vector<amrex::Real> throatvec, boxhi;
     pp2.getarr("tri_0_point_2", throatvec);
     pp2.getarr("top_box_lo", boxhi);

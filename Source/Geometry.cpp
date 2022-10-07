@@ -293,9 +293,10 @@ TailoredBB::build(
       plane0, plane1, plane2);
   }
 
-  auto alltri_IF = amrex::EB2::makeUnion(
-    *impfunc_triangles[0], *impfunc_triangles[1], *impfunc_triangles[2]);
-
+//  auto alltri_IF = amrex::EB2::makeUnion(
+//      *impfunc_triangles[0], *impfunc_triangles[1], *impfunc_triangles[2]);
+    auto alltri_IF = amrex::EB2::makeUnion(
+        *impfunc_triangles[0], *impfunc_triangles[1]);
   // Combine Geometry
   auto comb_shape = amrex::EB2::makeUnion(alltri_IF, topbox, bottombox);
 
