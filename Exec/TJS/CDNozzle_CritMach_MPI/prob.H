@@ -142,79 +142,81 @@ bcnormal(
       // Get the interior direction to check for flow reversal
       const amrex::Real uchk = s_int[UMX] / s_int[URHO];
 
+      // if ((Mach < prob_parm.outlet_mach_lim) && (uchk > 0.0)) {
+
+      //   // Initialize some variables
+      //   amrex::Real rho = 0.0, eint = 0.0, T = 0.0;
+      //   amrex::Real u = 0.0, v = 0.0, w = 0.0;
+
+      //   // Apply the Blazek non-reflecting BC
+      //   // Interior state (point d)
+      //   const amrex::Real* prob_hi = geomdata.ProbHi();
+      //   const amrex::Real* dx = geomdata.CellSize();
+      //   const amrex::Real xd = prob_hi[0] - 0.5 * dx[0];
+      //   const amrex::Real rho_int = s_int[URHO];
+      //   const amrex::Real u_int = s_int[UMX] / rho_int;
+      //   const amrex::Real v_int = s_int[UMY] / rho_int;
+      //   const amrex::Real w_int = s_int[UMZ] / rho_int;
+      //   const amrex::Real T_int = s_int[UTEMP];
+      //   amrex::Real p_int = 0.0, cs_int = 0.0;
+
+      //   auto eos = pele::physics::PhysicsType::eos();
+      //   eos.RTY2P(rho_int, T_int, massfrac_int.begin(), p_int);
+      //   eos.RTY2Cs(rho_int, T_int, massfrac_int.begin(), cs_int);
+
+      //   // Boundary state (point b)
+      //   const amrex::Real xb = prob_hi[0];
+      //   const amrex::Real pb = prob_parm.p_atm;
+      //   const amrex::Real rhob = s_int[URHO] + (pb - p_int) / (cs_int * cs_int);
+      //   const amrex::Real ub = u_int + (p_int - pb) / (rho_int * cs_int);
+      //   const amrex::Real vb = v_int;
+      //   const amrex::Real wb = w_int;
+
+      //   // Ghost state (point a). Linear extrapolation from d and b
+      //   rho = (rhob - rho_int) / (xb - xd) * (x[0] - xd) + rho_int;
+      //   const amrex::Real p = (pb - p_int) / (xb - xd) * (x[0] - xd) + p_int;
+
+      //   eos.RYP2E(rho, massfrac_int.begin(), p, eint);
+      //   eos.EY2T(eint, massfrac_int.begin(), T);
+
+      //   u = (ub - u_int) / (xb - xd) * (x[0] - xd) + u_int;
+      //   v = (vb - v_int) / (xb - xd) * (x[0] - xd) + v_int;
+      //   w = (wb - w_int) / (xb - xd) * (x[0] - xd) + w_int;
+
+      //   // Set state information
+      //   s_ext[URHO] = rho;
+      //   s_ext[UMX] = rho * u;
+      //   s_ext[UMY] = rho * v;
+      //   s_ext[UMZ] = rho * w;
+      //   s_ext[UEINT] = rho * eint;
+      //   s_ext[UEDEN] = rho * (eint + 0.5 * (u * u + v * v + w * w));
+      //   s_ext[UTEMP] = T;
+      //   for (int n = 0; n < NUM_SPECIES; n++) {
+      //    s_ext[UFS + n] = s_int[UFS+n];
+      //   }
+
+      // } else if ((Mach < prob_parm.outlet_mach_lim) && (uchk <= 0.0)) {
+
+      //   // Get interior state information
+      //   const amrex::Real u_int = s_int[UMX] / s_int[URHO];
+      //   const amrex::Real v_int = s_int[UMY] / s_int[URHO];
+      //   const amrex::Real w_int = s_int[UMZ] / s_int[URHO];
+
+      //   // Set state information
+      //   s_ext[URHO] = prob_parm.rho_atm;
+      //   s_ext[UMX] = prob_parm.rho_atm * u_int;
+      //   s_ext[UMY] = prob_parm.rho_atm * v_int;
+      //   s_ext[UMZ] = prob_parm.rho_atm * w_int;
+      //   s_ext[UEINT] = prob_parm.rho_atm * prob_parm.eint_atm;
+      //   s_ext[UEDEN] = prob_parm.rho_atm * (prob_parm.eint_atm + 0.5 * (u_int * u_int 
+      //     + v_int * v_int + w_int * w_int));
+      //   s_ext[UTEMP] = prob_parm.T_atm;
+      //   for (int n = 0; n < NUM_SPECIES; n++) {
+      //     s_ext[UFS + n] = prob_parm.rho_atm * prob_parm.massfrac_atm[n];
+      //   }
+
       if ((Mach < prob_parm.outlet_mach_lim) && (uchk > 0.0)) {
 
-        // Initialize some variables
-        amrex::Real rho = 0.0, eint = 0.0, T = 0.0;
-        amrex::Real u = 0.0, v = 0.0, w = 0.0;
-
-        // Apply the Blazek non-reflecting BC
-        // Interior state (point d)
-        const amrex::Real* prob_hi = geomdata.ProbHi();
-        const amrex::Real* dx = geomdata.CellSize();
-        const amrex::Real xd = prob_hi[0] - 0.5 * dx[0];
-        const amrex::Real rho_int = s_int[URHO];
-        const amrex::Real u_int = s_int[UMX] / rho_int;
-        const amrex::Real v_int = s_int[UMY] / rho_int;
-        const amrex::Real w_int = s_int[UMZ] / rho_int;
-        const amrex::Real T_int = s_int[UTEMP];
-        amrex::Real p_int = 0.0, cs_int = 0.0;
-
-        auto eos = pele::physics::PhysicsType::eos();
-        eos.RTY2P(rho_int, T_int, massfrac_int.begin(), p_int);
-        eos.RTY2Cs(rho_int, T_int, massfrac_int.begin(), cs_int);
-
-        // Boundary state (point b)
-        const amrex::Real xb = prob_hi[0];
-        const amrex::Real pb = prob_parm.p_atm;
-        const amrex::Real rhob = s_int[URHO] + (pb - p_int) / (cs_int * cs_int);
-        const amrex::Real ub = u_int + (p_int - pb) / (rho_int * cs_int);
-        const amrex::Real vb = v_int;
-        const amrex::Real wb = w_int;
-
-        // Ghost state (point a). Linear extrapolation from d and b
-        rho = (rhob - rho_int) / (xb - xd) * (x[0] - xd) + rho_int;
-        const amrex::Real p = (pb - p_int) / (xb - xd) * (x[0] - xd) + p_int;
-
-        eos.RYP2E(rho, massfrac_int.begin(), p, eint);
-        eos.EY2T(eint, massfrac_int.begin(), T);
-
-        u = (ub - u_int) / (xb - xd) * (x[0] - xd) + u_int;
-        v = (vb - v_int) / (xb - xd) * (x[0] - xd) + v_int;
-        w = (wb - w_int) / (xb - xd) * (x[0] - xd) + w_int;
-
-        // Set state information
-        s_ext[URHO] = rho;
-        s_ext[UMX] = rho * u;
-        s_ext[UMY] = rho * v;
-        s_ext[UMZ] = rho * w;
-        s_ext[UEINT] = rho * eint;
-        s_ext[UEDEN] = rho * (eint + 0.5 * (u * u + v * v + w * w));
-        s_ext[UTEMP] = T;
-        for (int n = 0; n < NUM_SPECIES; n++) {
-         s_ext[UFS + n] = s_int[UFS+n];
-        }
-
-      } else if ((Mach < prob_parm.outlet_mach_lim) && (uchk <= 0.0)) {
-
-        // Get interior state information
-        const amrex::Real u_int = s_int[UMX] / s_int[URHO];
-        const amrex::Real v_int = s_int[UMY] / s_int[URHO];
-        const amrex::Real w_int = s_int[UMZ] / s_int[URHO];
-
-        // Set state information
-        s_ext[URHO] = prob_parm.rho_atm;
-        s_ext[UMX] = prob_parm.rho_atm * u_int;
-        s_ext[UMY] = prob_parm.rho_atm * v_int;
-        s_ext[UMZ] = prob_parm.rho_atm * w_int;
-        s_ext[UEINT] = prob_parm.rho_atm * prob_parm.eint_atm;
-        s_ext[UEDEN] = prob_parm.rho_atm * (prob_parm.eint_atm + 0.5 * (u_int * u_int 
-          + v_int * v_int + w_int * w_int));
-        s_ext[UTEMP] = prob_parm.T_atm;
-        for (int n = 0; n < NUM_SPECIES; n++) {
-          s_ext[UFS + n] = prob_parm.rho_atm * prob_parm.massfrac_atm[n];
-        }
-        
       } else {
 
         // Supersonic outlet - only option is to extrapolate

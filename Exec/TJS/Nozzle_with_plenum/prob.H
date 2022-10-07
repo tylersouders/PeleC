@@ -19,19 +19,19 @@
 #include "ProblemDerive.H"
 #include "prob_parm.H"
 
-// EB things
-#include "EB.H"
-#include <AMReX_EB2_IF_Spline.H>
-#include "Utilities.H"
-#include "Geometry.H"
-class CDNozzle : public pele::pelec::Geometry::Register<CDNozzle>
-{
-public:
-  static std::string identifier() { return "cdnozzle"; }
+// // EB things
+// #include "EB.H"
+// #include <AMReX_EB2_IF_Spline.H>
+// #include "Utilities.H"
+// #include "Geometry.H"
+// class CDNozzle : public pele::pelec::Geometry::Register<CDNozzle>
+// {
+// public:
+//   static std::string identifier() { return "cdnozzle"; }
 
-  void
-  build(const amrex::Geometry& geom, const int max_coarsening_level) override;
-};
+//   void
+//   build(const amrex::Geometry& geom, const int max_coarsening_level) override;
+// };
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

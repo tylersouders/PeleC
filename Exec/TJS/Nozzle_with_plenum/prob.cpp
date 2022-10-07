@@ -181,148 +181,172 @@ PeleC::problem_post_restart()
 {
 }
 
-void
-CDNozzle::build(
-  const amrex::Geometry& geom, const int max_coarsening_level) {
+// void
+// CDNozzle::build(
+//   const amrex::Geometry& geom, const int max_coarsening_level) {
 
-  // Set up parmparse
-  amrex::ParmParse pp("eb2");
+//   const int npts_in_tri = 3;
+//   const int max_tri = 3;
 
-  // Get geometric limits
-  const amrex::Real* problo;
-  const amrex::Real* probhi;
-  amrex::Real maxlen;
+//   int num_tri;
+//   amrex::ParmParse pp("tailored_bb");
+//   // hard-code AMREX_SPACEDIM=3; this is for a triangle after all.
+//   amrex::Vector<amrex::Array<amrex::Real, AMREX_SPACEDIM>> alltri(
+//     npts_in_tri * max_tri);
 
-  problo = geom.ProbLo();
-  probhi = geom.ProbHi();
+//   // initalize all triangles with some dummy values
+//   // that fall outside of the domain
+//   const amrex::Real* problo;
+//   const amrex::Real* probhi;
+//   amrex::Real maxlen;
 
-  maxlen = std::max(
-    std::max(geom.ProbLength(0), geom.ProbLength(1)), geom.ProbLength(2));
+//   problo = geom.ProbLo();
+//   probhi = geom.ProbHi();
 
-  // Handle upper/lower boxes
-  amrex::Vector<amrex::Real> topboxlo, topboxhi, botboxlo, botboxhi;
+//   amrex::Vector<amrex::Real> topboxlo;
+//   amrex::Vector<amrex::Real> topboxhi;
+//   amrex::Vector<amrex::Real> botboxlo;
+//   amrex::Vector<amrex::Real> botboxhi;
+//   amrex::Vector<amrex::Real> bluffbodyhi;
+//   amrex::Vector<amrex::Real> bluffbodylo;    
 
-  pp.getarr("top_box_lo", topboxlo);
-  pp.getarr("top_box_hi", topboxhi);
-  pp.getarr("bot_box_lo", botboxlo);
-  pp.getarr("bot_box_hi", botboxhi);
+//   pp.getarr("top_box_lo", topboxlo);
+//   pp.getarr("top_box_hi", topboxhi);
+//   pp.getarr("bot_box_lo", botboxlo);
+//   pp.getarr("bot_box_hi", botboxhi);
 
-  // Generate Top Box
-  amrex::EB2::BoxIF topbox(
-    {AMREX_D_DECL(topboxlo[0], topboxlo[1], problo[2]-1.0)},
-    {AMREX_D_DECL(topboxhi[0], topboxhi[1], probhi[2]+1.0)}, false);
+//   // Generate Top Box
+//   amrex::EB2::BoxIF topbox(
+//     {AMREX_D_DECL(topboxlo[0], topboxlo[1], problo[2]-1.0)},
+//     {AMREX_D_DECL(topboxhi[0], topboxhi[1], probhi[2]+1.0)}, false);
 
-  // Generate Bottom Box
-  amrex::EB2::BoxIF bottombox(
-    {AMREX_D_DECL(botboxlo[0], botboxlo[1], problo[2]-1.0)},
-    {AMREX_D_DECL(botboxhi[0], botboxhi[1], probhi[2]+1.0)}, false);
+//   // Generate Bottom Box
+//   amrex::EB2::BoxIF bottombox(
+//     {AMREX_D_DECL(botboxlo[0], botboxlo[1], problo[2]-1.0)},
+//     {AMREX_D_DECL(botboxhi[0], botboxhi[1], probhi[2]+1.0)}, false);
 
-  // Get triangles for the CD nozzle
-  const int npts_in_tri = 3;
-  const int max_tri = 2;
-  int num_tri;
-  amrex::Vector<amrex::Array<amrex::Real, AMREX_SPACEDIM>> alltri(
-    npts_in_tri * max_tri);
+//   maxlen = std::max(
+//     std::max(geom.ProbLength(0), geom.ProbLength(1)), geom.ProbLength(2));
 
-  // Get number of triangles and coordinates from case file
-  pp.get("num_tri", num_tri);
+//   // // setting all triangles to be waaay outside the domain initially
+//   // for (int itri = 0; itri < max_tri; itri++) {
+//   //   alltri[npts_in_tri * itri + 0][0] = problo[0] + 100.0 * maxlen;
+//   //   alltri[npts_in_tri * itri + 0][1] = problo[1] + 100.0 * maxlen;
+//   //   alltri[npts_in_tri * itri + 0][2] = 0.0;
 
-  // setting all triangles to be waaay outside the domain initially
-  for (int itri = 0; itri < num_tri; itri++) {
-    alltri[npts_in_tri * itri + 0][0] = problo[0] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 0][1] = problo[1] - 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 0][2] = 0.0;
+//   //   alltri[npts_in_tri * itri + 1][0] = probhi[0] + 101.0 * maxlen;
+//   //   alltri[npts_in_tri * itri + 1][1] = problo[1] + 100.0 * maxlen;
+//   //   alltri[npts_in_tri * itri + 1][2] = 0.0;
 
-    alltri[npts_in_tri * itri + 1][0] = probhi[0] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 1][1] = problo[1] - 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 1][2] = 0.0;
+//   //   alltri[npts_in_tri * itri + 2][0] = probhi[0] + 101.0 * maxlen;
+//   //   alltri[npts_in_tri * itri + 2][1] = problo[1] + 101.0 * maxlen;
+//   //   alltri[npts_in_tri * itri + 2][2] = 0.0;
+//   // }
 
-    alltri[npts_in_tri * itri + 2][0] = probhi[0] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 2][1] = problo[1] + 100.0 * maxlen;
-    alltri[npts_in_tri * itri + 2][2] = 0.0;
-  }
+//   // tailored_bb.tri_2_point_0 = -0.34524  0.0    0.0
+//   // tailored_bb.tri_2_point_1 =  0.001   -0.1999 0.0
+//   // tailored_bb.tri_2_point_2 =  0.001    0.1999 0.0
 
-  for (int itri = 0; itri < num_tri; itri++) {
-    amrex::Array<amrex::Real, AMREX_SPACEDIM> point{
-      AMREX_D_DECL(0.0, 0.0, 0.0)};
+//   // HARD CODING BAD BUT SOMETIMES NECESSARY
+//   for (int itri = 0; itri < max_tri; itri++) {
+//     alltri[npts_in_tri * itri + 0][0] = -0.34;
+//     alltri[npts_in_tri * itri + 0][1] = 0.0;
+//     alltri[npts_in_tri * itri + 0][2] = 0.0;
 
-    for (int ipt = 0; ipt < npts_in_tri; ipt++) {
-      std::string pointstr =
-        "tri_" + convertIntGG(itri) + "_point_" + convertIntGG(ipt);
-      amrex::Vector<amrex::Real> vecpt;
-      pp.getarr(pointstr.c_str(), vecpt, 0, AMREX_SPACEDIM);
-      for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-        point[dir] = vecpt[dir];
-      }
-      alltri[npts_in_tri * itri + ipt] = point;
-    }
-  }
+//     alltri[npts_in_tri * itri + 1][0] = 0.0;
+//     alltri[npts_in_tri * itri + 1][1] = -0.199;
+//     alltri[npts_in_tri * itri + 1][2] = 0.0;
 
-  // intersection of the 3 planes in a triangle for all triangles
-  amrex::Vector<std::unique_ptr<amrex::EB2::IntersectionIF<
-    amrex::EB2::PlaneIF, amrex::EB2::PlaneIF, amrex::EB2::PlaneIF>>>
-    impfunc_triangles(max_tri);
+//     alltri[npts_in_tri * itri + 2][0] = 0.0;
+//     alltri[npts_in_tri * itri + 2][1] = 0.199;
+//     alltri[npts_in_tri * itri + 2][2] = 0.0;
+//   }
 
-  for (int itri = 0; itri < max_tri; itri++) {
-    // make sure points are in anti clockwise direction to set the inside of
-    // the triangle as solid phase correctly
-    amrex::Array<amrex::Real, AMREX_SPACEDIM> norm0;
-    amrex::Array<amrex::Real, AMREX_SPACEDIM> norm1;
-    amrex::Array<amrex::Real, AMREX_SPACEDIM> norm2;
+//   // get user defined number of triangles
+//   pp.get("num_tri", num_tri);
 
-    amrex::Array<amrex::Real, AMREX_SPACEDIM> point0;
-    amrex::Array<amrex::Real, AMREX_SPACEDIM> point1;
-    amrex::Array<amrex::Real, AMREX_SPACEDIM> point2;
+//   for (int itri = 0; itri < num_tri; itri++) {
+//     amrex::Array<amrex::Real, AMREX_SPACEDIM> point{
+//       AMREX_D_DECL(0.0, 0.0, 0.0)};
 
-    point0 = alltri[npts_in_tri * itri + 0];
-    point1 = alltri[npts_in_tri * itri + 1];
-    point2 = alltri[npts_in_tri * itri + 2];
+//     for (int ipt = 0; ipt < npts_in_tri; ipt++) {
+//       std::string pointstr =
+//         "tri_" + convertIntGG(itri) + "_point_" + convertIntGG(ipt);
+//       amrex::Vector<amrex::Real> vecpt;
+//       pp.getarr(pointstr.c_str(), vecpt, 0, AMREX_SPACEDIM);
+//       for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+//         point[dir] = vecpt[dir];
+//       }
+//       alltri[npts_in_tri * itri + ipt] = point;
+//     }
+//   }
 
-    norm0[0] = -(point1[1] - point0[1]);
-    norm0[1] = (point1[0] - point0[0]);
-    norm0[2] = 0.0;
+//   // intersection of the 3 planes in a triangle for all triangles
+//   amrex::Vector<std::unique_ptr<amrex::EB2::IntersectionIF<
+//     amrex::EB2::PlaneIF, amrex::EB2::PlaneIF, amrex::EB2::PlaneIF>>>
+//     impfunc_triangles(max_tri);
 
-    norm1[0] = -(point2[1] - point1[1]);
-    norm1[1] = (point2[0] - point1[0]);
-    norm1[2] = 0.0;
+//   for (int itri = 0; itri < max_tri; itri++) {
+//     // make sure points are in anti clockwise direction to set the inside of
+//     // the triangle as solid phase correctly
+//     amrex::Array<amrex::Real, AMREX_SPACEDIM> norm0;
+//     amrex::Array<amrex::Real, AMREX_SPACEDIM> norm1;
+//     amrex::Array<amrex::Real, AMREX_SPACEDIM> norm2;
 
-    norm2[0] = -(point0[1] - point2[1]);
-    norm2[1] = (point0[0] - point2[0]);
-    norm2[2] = 0.0;
+//     amrex::Array<amrex::Real, AMREX_SPACEDIM> point0;
+//     amrex::Array<amrex::Real, AMREX_SPACEDIM> point1;
+//     amrex::Array<amrex::Real, AMREX_SPACEDIM> point2;
 
-    // normalize so that magnitude is 1
-    amrex::Real norm = sqrt(norm0[0] * norm0[0] + norm0[1] * norm0[1]);
-    norm0[0] = norm0[0] / norm;
-    norm0[1] = norm0[1] / norm;
+//     point0 = alltri[npts_in_tri * itri + 0];
+//     point1 = alltri[npts_in_tri * itri + 1];
+//     point2 = alltri[npts_in_tri * itri + 2];
 
-    // normalize so that magnitude is 1
-    norm = sqrt(norm1[0] * norm1[0] + norm1[1] * norm1[1]);
-    norm1[0] = norm1[0] / norm;
-    norm1[1] = norm1[1] / norm;
+//     norm0[0] = -(point1[1] - point0[1]);
+//     norm0[1] = (point1[0] - point0[0]);
+//     norm0[2] = 0.0;
 
-    // normalize so that magnitude is 1
-    norm = sqrt(norm2[0] * norm2[0] + norm2[1] * norm2[1]);
-    norm2[0] = norm2[0] / norm;
-    norm2[1] = norm2[1] / norm;
+//     norm1[0] = -(point2[1] - point1[1]);
+//     norm1[1] = (point2[0] - point1[0]);
+//     norm1[2] = 0.0;
 
-    amrex::EB2::PlaneIF plane0(point0, norm0);
-    amrex::EB2::PlaneIF plane1(point1, norm1);
-    amrex::EB2::PlaneIF plane2(point2, norm2);
+//     norm2[0] = -(point0[1] - point2[1]);
+//     norm2[1] = (point0[0] - point2[0]);
+//     norm2[2] = 0.0;
 
-    impfunc_triangles[itri] = std::make_unique<amrex::EB2::IntersectionIF<
-      amrex::EB2::PlaneIF, amrex::EB2::PlaneIF, amrex::EB2::PlaneIF>>(
+//     // normalize so that magnitude is 1
+//     amrex::Real norm = sqrt(norm0[0] * norm0[0] + norm0[1] * norm0[1]);
+//     norm0[0] = norm0[0] / norm;
+//     norm0[1] = norm0[1] / norm;
 
-      plane0, plane1, plane2);
-  }
+//     // normalize so that magnitude is 1
+//     norm = sqrt(norm1[0] * norm1[0] + norm1[1] * norm1[1]);
+//     norm1[0] = norm1[0] / norm;
+//     norm1[1] = norm1[1] / norm;
 
-  auto alltri_IF = amrex::EB2::makeUnion(
-    *impfunc_triangles[0], *impfunc_triangles[1]);
+//     // normalize so that magnitude is 1
+//     norm = sqrt(norm2[0] * norm2[0] + norm2[1] * norm2[1]);
+//     norm2[0] = norm2[0] / norm;
+//     norm2[1] = norm2[1] / norm;
 
-  // Combine geometry
-  auto comb_shape = amrex::EB2::makeUnion(alltri_IF, topbox, bottombox);
+//     amrex::EB2::PlaneIF plane0(point0, norm0);
+//     amrex::EB2::PlaneIF plane1(point1, norm1);
+//     amrex::EB2::PlaneIF plane2(point2, norm2);
 
-  // Build
-  auto gshop = amrex::EB2::makeShop(comb_shape);
-  amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+//     impfunc_triangles[itri] = std::make_unique<amrex::EB2::IntersectionIF<
+//       amrex::EB2::PlaneIF, amrex::EB2::PlaneIF, amrex::EB2::PlaneIF>>(
 
-}
+//       plane0, plane1, plane2);
+//   }
+
+//   auto alltri_IF = amrex::EB2::makeUnion(
+//     *impfunc_triangles[0], *impfunc_triangles[1], *impfunc_triangles[2]);
+
+//   // Combine Geometry
+//   auto comb_shape = amrex::EB2::makeUnion(alltri_IF, topbox, bottombox);
+
+//   // auto comb_shape_extrude_IF = amrex::EB2::extrude(comb_shape, 2); // along z
+
+//   auto gshop = amrex::EB2::makeShop(comb_shape);
+//   amrex::EB2::Build(gshop, geom, max_coarsening_level, max_coarsening_level);
+
+// }
