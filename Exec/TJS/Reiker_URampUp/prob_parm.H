@@ -30,6 +30,9 @@ struct ProbParmDevice
   // Time to "shut off" the flow
   amrex::Real t_shutoff = 999999.9;
   amrex::Real outlet_mach_lim = 0.95;
+  // Variables to ramp flow up/down
+  amrex::Real Mach_inlet = 0.0;
+  amrex::Real t_transit = 0.0005;
 };
 
 struct ProbParmHost

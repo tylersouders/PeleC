@@ -74,6 +74,18 @@ bcnormal(
   // Initialize eos
   auto eos = pele::physics::PhysicsType::eos();
 
+  // Check if "transit time" for ramping up inlet vel
+  // Default to u_in
+  amrex::Real u_inlet = prob_parm.u_in;
+  amrex::Real dudt = prob_parm.u_in / prob_parm.t_transit;
+
+  // Conditionally scale
+  if (time < prob_parm.t_transit) {
+    u_inlet = dudt * time;
+  } else if (time > prob_parm.t_shutoff - prob_parm.t_transit) {
+    u_inlet = prob_parm.u_in - dudt * time;
+  }
+
   if (idir == 0) {
 
     // x-direction BC
@@ -84,12 +96,12 @@ bcnormal(
       // Inlet BC - set as dirichlet conditions computed in prob.cpp
       if (time < prob_parm.t_shutoff) {
         s_ext[URHO] = prob_parm.rho_in;
-        s_ext[UMX] = prob_parm.rho_in * prob_parm.u_in;
+        s_ext[UMX] = prob_parm.rho_in * u_inlet;
         s_ext[UMY] = 0.0;
         s_ext[UMZ] = 0.0;
         s_ext[UTEMP] = prob_parm.T_in;
         s_ext[UEINT] = prob_parm.rho_in * prob_parm.eint_in;
-        s_ext[UEDEN] = prob_parm.rho_in * (prob_parm.eint_in + 0.5 * (prob_parm.u_in*prob_parm.u_in));
+        s_ext[UEDEN] = prob_parm.rho_in * (prob_parm.eint_in + 0.5 * (u_inlet*u_inlet));
         for (int n = 0; n < NUM_SPECIES; n++) {
           s_ext[UFS + n] = prob_parm.rho_in * prob_parm.massfrac_in[n];
         }
