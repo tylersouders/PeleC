@@ -116,7 +116,7 @@ extern "C" {
     }
 
     // Save this Mach number
-    prob_parm.Mach_inlet = M;
+    // prob_parm.Mach_inlet = M;
 
     // Use Total-to-Static to get actual inlet conditions!
     PeleC::h_prob_parm_device->p_in = PeleC::h_prob_parm_device->p0 / 
