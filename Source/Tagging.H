@@ -144,6 +144,8 @@ struct EmptyProbTagStruct
     const int level,
     const int limit_level,
     const amrex::GpuArray<amrex::Real, 4> AMRlims,
+    const int static_level,
+    const amrex::GpuArray<amrex::Real, 4> staticlims,
     ProbParmDevice const& /*d_prob_parm_device*/) noexcept
   {
 
@@ -164,7 +166,22 @@ struct EmptyProbTagStruct
         tag(i, j, k) = amrex::TagBox::CLEAR;
 
       }
+
     }
+
+    // Check if in static region (this flag will override custom AMR bounds)
+    if (level < static_level) {
+
+      // Check if inside static refinement region
+      if ((x>=staticlims[0])&&(x<=staticlims[1])&&(y>=staticlims[2])&&(y<=staticlims[3])) {
+
+        // Ensure a tag is set (should force it to always stay at the set level)
+        tag(i, j, k) = amrex::TagBox::SET;
+
+      }
+
+    }
+
   }
 };
 

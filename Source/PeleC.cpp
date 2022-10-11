@@ -1838,11 +1838,20 @@ PeleC::errorEst(
       ppct.query("y_lim_lo", AMRlims[2]);
       ppct.query("y_lim_hi", AMRlims[3]);
 
+      // Get flags for static region
+      int static_lev = 0;
+      amrex::GpuArray<amrex::Real, 4> staticlims = {-1000.0, 1000.0, -1000.0, 1000.0};
+      ppct.query("static_lim_level", static_lev);
+      ppct.query("sx_lim_lo", staticlims[0]);
+      ppct.query("sx_lim_hi", staticlims[1]);
+      ppct.query("sy_lim_lo", staticlims[2]);
+      ppct.query("sy_lim_hi", staticlims[3]);
+
       amrex::ParallelFor(
         tilebox, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
           set_problem_tags<ProblemTags>(
             i, j, k, tag_arr, Sfab, tagval, dx, prob_lo, time, captured_level,
-            lim_lev, AMRlims, *lprobparm);
+            lim_lev, AMRlims, static_lev, staticlims, *lprobparm);
         });
 
       // Now update the tags in the TagBox.
